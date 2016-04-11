@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<style type="text/css">
+   html, body { height: 100%; padding: 0; margin: 0; }
+   div {overflow: scroll;}
+   #topLeft { background: #DDD; width:20%; height:30%; float:left;}
+   #topRight { background: #AAA; width:80%; height:80%; float:right;}
+   #bottomLeft { background: #777; width:20%; height:70%; float:left;}
+   #bottomRight { background: #444; width:80%; height:20%; float:right;}
+</style>   
+
+<script type="text/javascript" src="fusioncharts/js/fusioncharts.js"></script>
+<script type="text/javascript" src="fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
+
+<?php
+   include 'CoreFunctions.php';
+   include 'questionsToAnswer.php';
+   require_once("phpChart_Lite/conf.php");
+   include("fusioncharts/fusioncharts.php");
+?>
+
+<div id="topLeft">
+
+   <form name="form1" method="POST" action="<?php $_SERVER['PHP_SELF'];?>">
+   <select name="user_id">
+            
+   <input type="submit" name="submit2" value="Select User ID">
+
+</div>
+
+<div id="topRight">
+
+</div>
+
+<div id="bottomLeft">
+
+</div>
+
+<div id="bottomRight">
+
+</div>
+
+</body>
+</html>
+<!-- 
+$arrData = array (
+   'chart' => 
+      array (
+         'caption' => 'Comparison of Quarterly Revenue',
+         'xAxisname' => 'Quarter',
+         'yAxisName' => 'Revenues (In USD)',
+         'numberPrefix' => '$',
+         'plotFillAlpha' => '80',
+         'paletteColors' => '#0075c2,#1aaf5d, #1af5e',
+         'baseFontColor' => '#333333',
+         'baseFont' => 'Helvetica Neue,Arial',
+         'captionFontSize' => '14',
+         'subcaptionFontSize' => '14',
+         'subcaptionFontBold' => '0',
+         'showBorder' => '0',
+         'bgColor' => '#ffffff',
+         'showShadow' => '0',
+         'canvasBgColor' => '#ffffff',
+         'canvasBorderAlpha' => '0',
+         'divlineAlpha' => '100',
+         'divlineColor' => '#999999',
+         'divlineThickness' => '1',
+         'divLineIsDashed' => '1',
+         'divLineDashLen' => '1',
+         'divLineGapLen' => '1',
+         'usePlotGradientColor' => '0',
+         'showplotborder' => '0',
+         'valueFontColor' => '#ffffff',
+         'placeValuesInside' => '1',
+         'showHoverEffect' => '1',
+         'rotateValues' => '1',
+         'showXAxisLine' => '1',
+         'xAxisLineThickness' => '1',
+         'xAxisLineColor' => '#999999',
+         'showAlternateHGridColor' => '0',
+         'legendBgAlpha' => '0',
+         'legendBorderAlpha' => '0',
+         'legendShadow' => '0',
+         'legendItemFontSize' => '10',
+         'legendItemFontColor' => '#666666',
+      ),
+   'categories' => 
+      array (
+         // 0 => 
+         array (
+            'category' => 
+               array (
+                  // 0 => 
+                  array (
+                     'label' => 'Q1',
+                  ),
+                  // 1 => 
+                  array (
+                     'label' => 'Q2',
+                  ),
+                  // 2 => 
+                  array (
+                     'label' => 'Q3',
+                  ),
+                  // 3 => 
+                  array (
+                     'label' => 'Q4',
+               ),
+            ),
+         ),
+      ),
+   'dataset' => 
+      array (
+         array (
+            'seriesname' => 'Previous Year',
+            'data' => 
+               array (
+                  array (
+                     'value' => '10000',
+                  ),
+                  array (
+                     'value' => '11500',
+                  ),
+                  array (
+                     'value' => '12500',
+                  ),
+                  array (
+                     'value' => '15000',
+                  ),
+            )
+         ),
+         array (
+            'seriesname' => 'Current Year',
+               'data' => 
+               array (
+                  array (
+                     'value' => '25400',
+                  ),
+                  array (
+                     'value' => '29800',
+                  ),
+                  array (
+                     'value' => '21800',
+                  ),
+                  array (
+                     'value' => '26800',
+                  ),
+               )
+         ),
+         array (
+            'seriesname' => 'Future Year',
+               'data' => 
+               array ( 
+                  array (
+                     'value' => '25400',
+                  ), 
+                  array (
+                     'value' => '29800',
+                  ),
+                  array (
+                     'value' => '21800',
+                  ), 
+                  array (
+                     'value' => '26800',
+                  ),
+               )
+         )
+   )
+); -->
