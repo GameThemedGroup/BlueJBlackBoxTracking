@@ -20,12 +20,14 @@
          return $dateArray;
          // echo $startDate . "\n" . $endDate . "\n";
       } else {
-         echo "No arguments passed\n";
+         echo "No arguments passed, script ended\n";
          exit();
       }
    }
 
    function connectToBlackBox(){
+      global $endLine;
+
       $servername = "127.0.0.1:3307";
       $username = "whitebox";
       $password = "ivorycube";
@@ -35,9 +37,12 @@
       $conn = new mysqli($servername, $username, $password, $database);
 
       //Check connection
-      if($conn->connect_error){
-         die("FAILEDDDDDDDDD " . $conn->connect_error);
-      }
+      checkConnection($conn);
+
+      // if($conn->connect_error){
+      //    die("Connection failed, please make sure you are connected to the server" . $endLine);
+      //    exit();
+      // }
       // echo "Connected to Blackbox!\n<br>**********************\n<br>";
       return $conn;
    }
@@ -104,13 +109,27 @@
    }
 
    function getResult($connection, $query){
+      global $endLine;
+
       checkConnection($connection);
       $results = $connection->query($query);
       if(!$results){
-         die("Invalid query: " . mysql_error);
+         die("Invalid query, please make sure query is correct with all the right parameters" . $endLine);
+         exit();
       } else {
          return $results;
       }
+   }
+
+   function getResultArray($connection, $query, $field){
+      $results = getResult($connection, $query);
+      $resultArray = array();
+      if($results != null){
+         while($row = $results->fetch_assoc()){
+            array_push($resultArray, $row[$field]);
+         }
+      } 
+      return $resultArray;
    }
    
    function objToArray($results, $colName){
@@ -148,7 +167,13 @@
    }
 
    function checkConnection($conn){
-      if(!mysqli_ping($conn)){
+      global $endLine;
+      // if ($conn->connect_error) {
+      //    die("Connection failed: " . $conn->connect_error);
+      //    exit();
+      // } 
+      if($conn->connect_error || !mysqli_ping($conn)){
+         die("Connection failed, please make sure you are connected to the server" . $endLine);
          exit();
       }
    }
@@ -156,58 +181,28 @@
    function getTableContents($conn, $ids, $table, $field){
       global $endLine;
 
-      // if($ids->num_rows > 0){
-      // if(is_a($ids, 'mysqli_result')){
-      //    $fileName = $table . "_out.csv";
-      //    echo "Created CSV file with filename of " . $fileName . $endLine;
-      //    $fp = fopen($fileName, 'w');
+      if(count($ids) > 0){
+         // $fileName = "output/". $table . "_out.csv";
+         $fileName = $table . "_out.csv";
+         printLog("Created CSV file with filename of " . $fileName);
+         $fp = fopen($fileName, 'w');
 
-      //    if($ids->num_rows > 0){
-      //       foreach($ids as $id){
-      //          // echo $result[$result_id] . $endLine;
-      //          $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id[$result_id]."'";
-      //          // echo $query . $endLine;
-      //          $results = getResult($conn, $query);
+         foreach($ids as $id){
+            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id."'";
+            $results = getResult($conn, $query);
 
-      //          if($results->num_rows > 0){
-      //             //returns the result object if it's not null
-      //             // echo "Writing " . $field ." ". $id[$result_id] . " to CSV file" . $endLine;
-      //             foreach ($results as $val) {
-      //                fputcsv($fp, $val);       
-      //             }
-      //          }
-      //       }
-
-      //       fclose($fp);
-      //       echo $table . " table download completed" . $endLine;
-      //       return $fileName;
-      //    }
-      // } else {
-         if(count($ids) > 0){
-            $fileName = $table . "_out.csv";
-            echo "Created CSV file with filename of " . $fileName . $endLine;
-            $fp = fopen($fileName, 'w');
-
-            foreach($ids as $id){
-               // echo $result[$result_id] . $endLine;
-               $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id."'";
-               // echo $query . $endLine;
-               $results = getResult($conn, $query);
-
-               if($results->num_rows > 0){
-                  //returns the result object if it's not null
-                  // echo "Writing " . $field ." ". $id[$result_id] . " to CSV file" . $endLine;
-                  foreach ($results as $val) {
-                     fputcsv($fp, $val);       
-                  }
+            if($results->num_rows > 0){
+               //returns the result object if it's not null
+               foreach ($results as $val) {
+                  fputcsv($fp, $val);       
                }
             }
-
-            fclose($fp);
-            echo $table . " table download completed" . $endLine;
-            return $fileName;
          }
-      // }
+
+         fclose($fp);
+         printLog($table . " table download completed");
+         return $fileName;
+      }
    }
 
    function saveToCsv($filename, $results){
@@ -230,7 +225,7 @@
    }
 
    function getBenchObjects($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "bench_objects", "package_id", "package_id");
+      $fileCreated = getTableContents($conn, $results, "bench_objects", "package_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -254,7 +249,7 @@
 
    function getBenchObjectsFixture($conn, $results){
       // getBenchObjects($conn, $results, "bench_objects_fixtures", "bench_object_id");
-      $fileCreated = getTableContents($conn, $results, "bench_objects_fixtures", "bench_object_id", "id");
+      $fileCreated = getTableContents($conn, $results, "bench_objects_fixtures", "bench_object_id");
       return $fileCreated;
       /*if($results->num_rows > 0){
          $fp = fopen("bench_objects_fixture_out.csv", 'w');
@@ -273,7 +268,7 @@
    }
 
    function getBreakpoints($conn, $ids){
-      $fileCreated = getTableContents($conn, $ids, "breakpoints", "source_file_id", "id");
+      $fileCreated = getTableContents($conn, $ids, "breakpoints", "source_file_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -294,7 +289,7 @@
    }
 
    function getClientAddressId($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "client_addresses", "id", "client_address_id");
+      $fileCreated = getTableContents($conn, $results, "client_addresses", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -317,7 +312,7 @@
    }
 
    function getCodePadEvents($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "codepad_events", "id", "event_id");
+      $fileCreated = getTableContents($conn, $results, "codepad_events", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -338,7 +333,7 @@
    }
 
    function getCompileEvents($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "compile_events", "id", "compile_event_id");
+      $fileCreated = getTableContents($conn, $results, "compile_events", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -359,7 +354,7 @@
    }
 
    function getCompileInputs($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "compile_inputs", "source_file_id", "id");
+      $fileCreated = getTableContents($conn, $results, "compile_inputs", "source_file_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -399,7 +394,7 @@
    }
 
    function getDebuggerEvents($conn, $results){  
-      $fileCreated = getTableContents($conn, $results, "debugger_events", "id", "event_id");
+      $fileCreated = getTableContents($conn, $results, "debugger_events", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -420,12 +415,12 @@
    }
 
    function getDebuggerStackEntries($conn, $results){
-      if($results->num_rows > 0){
-         $fp = fopen("stack_entries_debugger_out.csv", 'w');
+      if(count($results) > 0){
+         $fp = fopen("stack_entries_out.csv", 'w');
+         printLog("Created CSV file with filename of stack_entries_out.csv");
+
          foreach($results as $event){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From stack_entries WHERE sub_event_type= 'DebuggerEvent' and sub_event_id= '".$event['event_id']."'";
-            // echo $query . $endLine;
+            $query = "SELECT * From stack_entries WHERE sub_event_type= 'DebuggerEvent' and sub_event_id= '".$event."'";
             $results = getResult($conn, $query);
 
             foreach ($results as $val) {
@@ -433,37 +428,30 @@
             }
          }
          fclose($fp);
+         printLog("stack_entries table with DebuggerEvent download completed");
       }
    }
 
-   function getExperimentSessions($connection){
-      //Query
-      $sql = "SELECT s.* FROM (SELECT @experiment:='uwbmcss595') unused, sessions_for_experiment s";
-      
-      $results = $connection->query($sql);
+   function getInvocationStackEntries($conn, $results){
+      if(count($results) > 0){
+         $fp = fopen("stack_entries_out.csv", 'w');
+         printLog("Created CSV file with filename of stack_entries_out.csv");
 
-      // $relatedSessionList = array();
+         foreach($results as $event){
+            $query = "SELECT * From stack_entries WHERE sub_event_type= 'Invocation' and sub_event_id= '".$event."'";
+            $results = getResult($conn, $query);
 
-      // if($results->num_rows > 0){
-      //    //output data of each row
-      //    $i = 0;
-      //    // while($row = $results->fetch_row()){
-      //    while($row = $results->fetch_assoc()){
-      //       //echo "ID: " . $row[0] . $endLine;
-
-      //       $relatedSessionList[$i] = $row["participant_identifier"];
-      //       // $participantList[$i] = $row[0];
-      //       $i++;
-      //    }
-      // } else {
-      //    echo "No result\n<br>";
-      // }
-      // return $relatedSessionList;
-      return $results;
+            foreach ($results as $val) {
+               fputcsv($fp, $val);       
+            }
+         }
+         fclose($fp);
+         printLog("stack_entries table with InvocationEvent download completed");
+      }
    }
 
    function getExtensions($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "extensions", "master_event_id", "id");
+      $fileCreated = getTableContents($conn, $results, "extensions", "master_event_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -503,7 +491,7 @@
    }
 
    function getFixtures($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "fixtures", "source_file_id", "id");
+      $fileCreated = getTableContents($conn, $results, "fixtures", "source_file_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -524,7 +512,7 @@
    }
 
    function getIspectors($conn, $ids){
-      $fileCreated = getTableContents($conn, $ids, "inspectors", "session_id", "id");
+      $fileCreated = getTableContents($conn, $ids, "inspectors", "session_id");
       return $fileCreated;
       /*
       if($userIds->num_rows > 0){
@@ -545,36 +533,8 @@
       */
    }
 
-   function getInstallationId($conn){
-      $query = "SELECT distinct installation_details_id From sessions where user_id =1110282";
-
-      // $results = getResult($conn, $query);   //get project ID
-      $installationDetailList = getResult($conn, $query);   //get project ID
-      // $fieldNames = getFieldNames($results);
-      // $fieldNames = getFieldNames($installationDetailList);
-      // $projectidList = array();
-
-      // if($results->num_rows > 0){
-      //    $i = 0;
-      //    while($row = $results->fetch_assoc()){
-      //       $projectidList[$i] = $row["project_id"];
-      //       $i++;
-      //    }
-      // } else {
-      //    echo "No results\n<br>";
-      // }
-
-
-      // echo "<table border='1'>";
-      // printArray($fieldNames, true);
-      // // printArray($projectidList);
-      // printQueryResults($installationDetailList);
-      // echo "<table>";
-      return $installationDetailList;
-   }
-
    function getInstallations($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "installation_details", "id", "installation_details_id");
+      $fileCreated = getTableContents($conn, $results, "installation_details", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -595,7 +555,7 @@
    }
 
    function getInvocations($conn, $ids){
-      $fileCreated = getTableContents($conn, $ids, "invocations", "session_id", "id");
+      $fileCreated = getTableContents($conn, $ids, "invocations", "session_id");
       return $fileCreated;
       /*
       //This event has a package_id field, which indicates which package window the method was invoked from
@@ -616,34 +576,13 @@
       */
    }
 
-   function getInvocationTypes(){
-      $query = "SELECT count(result), result FROM invocations group by result order by count(result) desc";
-   }
-
-   function getInvocationStackEntries($conn, $results){
-      if($results->num_rows > 0){
-         $fp = fopen("stack_entries_invocation_out.csv", 'w');
-         foreach($results as $event){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From stack_entries WHERE sub_event_type= 'Invocation' and sub_event_id= '".$event['event_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-   }
-
    function getMasterEvents($conn, $userIds, $startDate, $endDate){
       $table = "master_events";
       $field = "user_id";
       // $fileCreated = getTableContents($conn, $userIds, $table, $field, $field);
       global $endLine;
 
-      if($userIds->num_rows > 0){
+      if(count($userIds) > 0){
          $fileName = $table . "_out.csv";
          echo "Created CSV file with filename of " . $fileName . $endLine;
          $fp = fopen($fileName, 'w');
@@ -672,7 +611,7 @@
    }
 
    function getPackages($conn, $ids){
-      $fileCreated = getTableContents($conn, $ids, "packages", "project_id", "project_id");
+      $fileCreated = getTableContents($conn, $ids, "packages", "project_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -693,7 +632,6 @@
    }
 
    function getProjects($conn, $results){
-      // $fileCreated = getTableContents($conn, $results, "projects", "user_id", "user_id");
       $fileCreated = getTableContents($conn, $results, "projects", "user_id");
       return $fileCreated;
       /*
@@ -714,50 +652,8 @@
       */
    }
 
-   function getResultsFromIds($connection, $idList, $tableName, $fieldToSearch){
-      $resultList = array();
-      $i = 0;
-
-      foreach($idList as $id){
-         // echo "Current User ID: " .$id. $endLine;
-         $sql = "SELECT * From ". $tableName ." WHERE " . $fieldToSearch ."='".$id[$fieldToSearch]."'";
-         // echo $sql . $endLine;
-         $results = $connection->query($sql);
-
-         //get field names
-         $fieldNames = getFieldNames($results);
-         if($results->num_rows > 0){
-            // $resultList[$fieldNames] = $results;
-            echo "<tr><td>". $fieldToSearch . ": " . $id[$fieldToSearch] . "</td></tr>";
-            printArray($fieldNames, true);
-            printQueryResults($results);
-
-         // while($row = $results->fetch_assoc()){
-         //    $sourceFileid[$i] = $row['session_id'];
-         //    // foreach($row as $field){
-         //    //    $sourceFileid[$i] = $row['id'];
-         //    // }
-         //    $i++;
-         // }
-
-         } 
-         $i++;
-      }
-
-      return $resultList;
-   }
-
-   function getSessionid($conn){
-      $query = "SELECT session_id From master_events where user_id =1110282 order by created_at desc";
-
-      $sessionidList = getResult($conn, $query);   //get master events using list of user_id
-      $fieldNames = getFieldNames($sessionidList);
-
-      return $sessionidList;
-   }
-
    function getSessions($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "sessions", "id", "id");
+      $fileCreated = getTableContents($conn, $results, "sessions", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -777,47 +673,8 @@
       */
    }
 
-   function getSourceFileid($conn){
-      //////////////////////////////////
-      //establish connection and logging onto Whitebox MySql Server and selecting blackbox_production database
-      $conn = connectToBlackBox();
-      $query = "SELECT distinct project_id From master_events where user_id =1110282 order by created_at desc";
-
-      //Get all project id from user id
-      $projectidList = getResult($conn, $query);
-
-      $sourceFileid = array();
-      $i = 0;
-
-      foreach($projectidList as $id){
-         if($id["project_id"] != null){
-            // echo "<tr><td>Project ID: ". $id["project_id"] . "</td></tr>";
-            $sql = "SELECT id as 'Source File ID', name From source_files where project_id =" .$id["project_id"];
-            // $sql = "SELECT * From source_files where project_id =" .$id["project_id"];
-            $results = $conn->query($sql);
-            $fieldNames = getFieldNames($results);
-            // echo "<table border='1'>";
-            // printArray($fieldNames, true);
-            // printQueryResults($results);
-            // echo "<table><br>";
-
-            while($row = $results->fetch_assoc()){
-               $sourceFileid[$i] = $row['Source File ID'];
-               // $sourceFileid[$i] = $row['id'];
-               // $soureceFileid[$i] = $row;
-
-               // foreach($row as $field){
-               //    $sourceFileid[$i] = $row['id'];
-               // }
-               $i++;
-            }
-         }
-      }
-      return $sourceFileid;
-   }
-
    function getSourceFiles($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "source_files", "project_id", "project_id");
+      $fileCreated = getTableContents($conn, $results, "source_files", "project_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -838,7 +695,7 @@
    }
 
    function getSourceHashes($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "source_hashes", "id", "package_id");
+      $fileCreated = getTableContents($conn, $results, "source_hashes", "id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -859,7 +716,7 @@
    }
 
    function getSourceHistories($conn, $ids){
-      $fileCreated = getTableContents($conn, $ids, "source_histories", "source_file_id", "id");
+      $fileCreated = getTableContents($conn, $ids, "source_histories", "source_file_id");
       return $fileCreated;
       /*
       $fileCreated = "source_histories_out.csv";
@@ -888,7 +745,7 @@
    }
 
    function getTests($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "tests", "session_id", "id");
+      $fileCreated = getTableContents($conn, $results, "tests", "session_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -909,7 +766,7 @@
    }
 
    function getTestResults($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "test_results", "session_id", "id");
+      $fileCreated = getTableContents($conn, $results, "test_results", "session_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
@@ -930,7 +787,7 @@
    }
 
    function getUsers($conn, $userIds){
-      $fileCreated = getTableContents($conn, $userIds, "users", "id", "user_id");
+      $fileCreated = getTableContents($conn, $userIds, "users", "id");
       return $fileCreated;
       /*
       if($userIds->num_rows > 0){
@@ -1026,17 +883,31 @@
          echo $str . ": " . date("Y-m-d h:i:a") . $endLine;
    }
 
-   function writeCheckpoint($fileName, $status){
-      file_put_contents($fileName, $status);
+   function saveToFile($fileName, $status) {
+      file_put_contents($fileName, serialize($status));
    }
 
-   function readCheckpoint($fileName){
-      $status = 0;
+   function writeCheckpoint($checkPoint, $key){
+      $checkPoint[$key] = 1;
+      $checkPoint["started"] = 1;
+      saveToFile("checkpoint", $checkPoint);
+      // file_put_contents($fileName, serialize($status));
+   }
+
+   function restoreFromFile($fileName){
+      $data = array();
+
       if(file_exists($fileName)){
-         $status = file_get_contents($fileName);
-         if(empty($status))
-            $status = 0;
+         $data = file_get_contents($fileName);
+         if(empty($data))
+            $data = array();
+         else
+            $data = unserialize($data);
       }  
-      return $status;
+      return $data;
+   }
+
+   function readCheckpoint(){
+      return restoreFromFile("checkpoint");
    }
 ?>

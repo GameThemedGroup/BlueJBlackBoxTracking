@@ -1,24 +1,28 @@
 <?php
+   //Note to self when recreating output and checkpoint folders
+   //
+   //chmod 775 [directory name]
+   //Change contents in folder to 
+   //chmod 664 [directory name]/*
+
    include 'CoreFunctions.php';
    date_default_timezone_set("America/Los_Angeles"); 
    printLog("Download and updating.....Start");
 
    // //Read status from downloadStatus file
-   $checkpointFile = "checkpoint";
    $useridFile = "useridFile";
    $sessionidFile = "sessionidFile";
    $projectidFile = "projectidFile";
    $sourceFileidFile = "sourceFileidFile";
 
-   $currentStatus = readCheckpoint($checkpointFile);
-   $checkPoint = 0;
+   $checkPoint = readCheckpoint();
 
-   if($currentStatus > 0){
+   if(array_key_exists("started", $checkPoint) && $checkPoint["started"] == 1){
       printLog("Resuming from Checkpoint");
-      $useridList = unserialize(readCheckpoint($useridFile));
-      $sessionidList = unserialize(readCheckpoint($sessionidFile));
-      $projectidList = unserialize(readCheckpoint($projectidFile));
-      $sourceFileIdList = unserialize(readCheckpoint($sourceFileidFile));
+      $useridList = restoreFromFile($useridFile);
+      $sessionidList = restoreFromFile($sessionidFile);
+      $projectidList = restoreFromFile($projectidFile);
+      $sourceFileIdList = restoreFromFile($sourceFileidFile);
    }
 
    // //Get start and end date for the data to download
@@ -29,34 +33,29 @@
    //establish connection and logging onto Whitebox MySql Server and selecting blackbox_production database
    $conn = connectToBlackBox();
 
-   if($currentStatus < ++$checkPoint){
+   $key = "init";
+   if(!$checkPoint[$key]){
       //Get user_id using experiment_identifier (e.g.'uwbgtcs')
       //The following query returns all UNIQUE user_id using the experiment_identifier = uwbgtcs
-      $colName = "user_id";
-      $query = "SELECT distinct s." .$colName. " FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
-      // $query = "SELECT distinct s.user_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+      $query = "SELECT distinct s.user_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
       
       //Store returned mysqli results object into $useridList
-      $userids = getResult($conn, $query);
-      $useridList = objToArray($userids, $colName);
-      writeCheckpoint($useridFile, serialize($useridList));
+      $useridList = getResultArray($conn, $query, "user_id");
+      saveToFile($useridFile, $useridList);
 
       //Get session_id using experiment_identifier (e.g.'uwbgtcs')
       //This is the MOST important query, as this is THE only way to tie the data to our research just like the user_id query
-      $colName = "id";
-      $query = "SELECT s." .$colName. " FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
-      // $query = "SELECT s.id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+      $query = "SELECT s.id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
       
       //Store returned mysqli results object into $sessionidList
-      $sessionids = getResult($conn, $query);
-      $sessionidList = objToArray($sessionids, $colName);
-      writeCheckpoint($sessionidFile, serialize($sessionidList));
+      $sessionidList = getResultArray($conn, $query, "id");
+      saveToFile($sessionidFile, $sessionidList);
    
-      //disconnect from Blackbox's Whitebox MySql server
-      // disconnectServer($conn);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "inspectors";
+   if(!$checkPoint[$key]){
       //Inspector 
       printLog("Downloading inspectors to local");
       // // $conn = connectToBlackBox();
@@ -64,10 +63,11 @@
       // // disconnectServer($conn);
       updateLocal($fileCreated);
    
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "invocations";
+   if(!$checkPoint[$key]){
       // //Use sessionidList to populate local invocations table
       printLog("Start populating local invocations with session_id");
       // // $conn = connectToBlackBox();
@@ -75,10 +75,11 @@
       // // disconnectServer($conn);
       updateLocal($fileCreated);
    
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "sessions";
+   if(!$checkPoint[$key]){
       // //Use sessionidList to populate local sessions
       printLog("Start populating local sessions with session_id");
       // // $conn = connectToBlackBox();
@@ -86,10 +87,11 @@
       // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);  
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "master_events";
+   if(!$checkPoint[$key]){
       // //master_events table
       // //Use the above useridList to retrieve all related participants master events from the Whitebox server
       // //Populating the master_events table has to be the first table to downloaded because
@@ -103,109 +105,103 @@
       
       printLog("Start retrieving all project_id related to experiment");
       $connLocal = connectToLocal("capstoneLocal");
-      $colName = "project_id";
-      $query = "SELECT distinct ".$colName." From master_events";
-      $projectid = getResult($connLocal, $query);
-      $projectidList = objToArray($projectid, $colName);
-      writeCheckpoint($projectidFile, serialize($projectidList));
+   
+      $query = "SELECT distinct project_id From master_events";
+      $projectidList = getResultArray($connLocal, $query, "project_id");
+      saveToFile($projectidFile, $projectidList);
+      
       disconnectServer($connLocal);
 
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "users";
+   if(!$checkPoint[$key]){
       // //users table
       // //The table can be populated simply by query for every user_id from useridList retrieved earlier
-
       printLog("Start populating local users");
       $fileCreated = getUsers($conn, $useridList);
       updateLocal($fileCreated);
 
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "projects";
+   if(!$checkPoint[$key]){
       // //Use useridList to populate local projects table
       printLog("Start populating local projects");
-      // // $conn = connectToBlackBox();
       $fileCreated = getProjects($conn, $useridList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
 
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "packages";
+   if(!$checkPoint[$key]){
       // //Use local projectidList from projects table to populate local packages table
       printLog("Start populating local packages");
-      // // $conn = connectToBlackBox();
       $fileCreated = getPackages($conn, $projectidList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "source_files";
+   if(!$checkPoint[$key]){
       // //Populate source_files table using projectiList from local master_events table
       printLog("Start populating local source_files");
-      // // $conn = connectToBlackBox();
       $fileCreated = getSourceFiles($conn, $projectidList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "sourceIds";
+   if(!$checkPoint[$key]){
       // //Get all SourceFileID from local source_files table if source_file table has been retrieved
       printLog("Get all SourceFileID from local source_files");
       $connLocal = connectToLocal("capstoneLocal");
-      $colName = "id";
-      // $query = "SELECT id from source_files";
-      $query = "SELECT ".$colName." from source_files";
-      $sourceFileId = getResult($connLocal, $query);
-      $sourceFileIdList = objToArray($sourceFileId, $colName);
-      writeCheckpoint($sourceFileidFile, serialize($sourceFileIdList));
+      
+      $query = "SELECT id from source_files";
+      $sourceFileIdList = getResultArray($connLocal, $query, "id");
+      
+      saveToFile($sourceFileidFile, $sourceFileIdList);
       disconnectServer($connLocal);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "breakpoints";
+   if(!$checkPoint[$key]){
       // //breakpoints table
       // //Populate local breakpoints using sourceFileIdList
       printLog("Start populating local breakpoints");
-      // // $conn = connectToBlackBox();
       $fileCreated = getBreakpoints($conn, $sourceFileIdList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "compile_inputs";
+   if(!$checkPoint[$key]){
       // //compile_inputs table
       // //Populate local compile_inputs table with sourceFileIdList
       printLog("Start populating local compile_inputs");
-      // // $conn = connectToBlackBox();
       $fileCreated = getCompileInputs($conn, $sourceFileIdList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){  
+   $key = "fixtures";
+   if(!$checkPoint[$key]){  
       //fixtures table
       //Populate local fixtures table with sourceFileIdList
       printLog("Downloading fixtures to local");
-      // // $conn = connectToBlackBox();
       $fileCreated = getFixtures($conn, $sourceFileIdList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
    //////////////////////////////////////////////////////////////////////
@@ -219,7 +215,8 @@
    // updateLocal("'source_histories_out.csv'", "source_histories");
    //////////////////////////////////////////////////////////////////////
 
-   if($currentStatus < ++$checkPoint){
+   $key = "compile_events_and_outputs";
+   if(!$checkPoint[$key]){
       // //compile_outputs table
       // //Populate local compile_outputs table with compile_event_id and source_file_id from local compile_inputs
       printLog("Getting compile_event_id(s)");
@@ -228,43 +225,37 @@
       $compileEventIdList = getResult($connLocal, $query);
       disconnectServer($connLocal);
 
+      // //compile_output table
       printLog("Downloading compile_output to local");
-      // $conn = connectToBlackBox();
       $fileCreated = getCompileOutputs($conn, $compileEventIdList);
-      // disconnectServer($conn);
-      // // update compile_outputs table of local server
       updateLocal($fileCreated);
-
       // //compile_events table
-      // //Populate local compile_events table with compile_event_id from local compile_inputs
       printLog("Downloading compile_events to local");
-      // // $conn = connectToBlackBox();
       $fileCreated = getCompileEvents($conn, $compileEventIdList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "source_hashes";
+   if(!$checkPoint[$key]){
       //source_hashes table
       //Populate local source_hashes table with package_id from local server
       printLog("Getting package_id(s)");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct package_id from master_events";
-      $packageList = getResult($connLocal, $query);
+      $packageList = getResultArray($connLocal, $query, "package_id");
       disconnectServer($connLocal);
 
       printLog("Downloading source_hashes to local");
-      // $conn = connectToBlackBox();
       $fileCreated = getSourceHashes($conn, $packageList);
-      // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "stack_entries";
+   if(!$checkPoint[$key]){
       //stack_entries table
       //Get all event_id from local master_events where event_type is Invocation or DebuggerEvent
       //The retrieved event_id will be used to populate stack_entries table
@@ -273,40 +264,41 @@
       printLog("Getting all event_id(s) where event_type is Invoation");
       //select all event_id with type invocation
       $query = "SELECT event_id from master_events where event_type = 'Invocation'";
-      $invocationEventList = getResult($connLocal, $query);
-      // disconnectServer($connLocal);
+      $invocationEventList = getResultArray($connLocal, $query, "event_id");
 
       printLog("Getting all event_id(s) where event_type is DebuggerEvent");
       //select all event_id with type debuggerEvent
-      // $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct event_id from master_events where event_type = 'DebuggerEvent'";
-      $debuggerEventList = getResult($connLocal, $query);
+      $debuggerEventList = getResultArray($connLocal, $query, "event_id");
       disconnectServer($connLocal);
 
       printLog("Downloading stack_entries with invocation as event to local");
       // retrieve all stack_entries of type Invocation and the event_id
-      // $conn = connectToBlackBox();
       getInvocationStackEntries($conn, $invocationEventList);
-      // disconnectServer($conn);
-      updateLocal("'stack_entries_invocation_out.csv'", "stack_entries");
+      updateLocal("stack_entries_out.csv");
 
       printLog("Downloading stack_entries with debugger as event to local");
       //retrieve all stack_entries of type DebuggerEvent and the event_id
-      // $conn = connectToBlackBox();
       getDebuggerStackEntries($conn, $debuggerEventList);
-      // disconnectServer($conn);
-      updateLocal("'stack_entries_debugger_out.csv'", "stack_entries");
+      updateLocal("stack_entries_out.csv");
+
+      //Debugger Events
+      printLog("Downloading degbugger_events to local");
+      $fileCreated = getDebuggerEvents($conn, $debuggerEventList);
+      updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "bench_objects";
+   if(!$checkPoint[$key]){
       //bench_objects table
       //Populate bench_objects using package_id
       printLog("Getting all package_id(s) where event_type is BenchObject");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct package_id from master_events where event_type = 'BenchObject'";
-      $benchPackageList = getResult($connLocal, $query);
+      $benchPackageList = getResultArray($connLocal, $query, "package_id");
+
       disconnectServer($connLocal);
 
       printLog("Downloading bench_objects to local");
@@ -315,15 +307,17 @@
       // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "bench_objects_fixture";
+   if(!$checkPoint[$key]){
       //Bench object fixture
       printLog("Getting all id(s) from bench_objects");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct id from bench_objects";
-      $benchObjectList = getResult($connLocal, $query);
+      $benchObjectList = getResultArray($connLocal, $query, "id");
+
       disconnectServer($connLocal);
 
       printLog("Downloading bench_objects_fixture to local");
@@ -332,27 +326,18 @@
       // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
-      //Debugger Events
-      printLog("Downloading degbugger_events to local");
-      // // $conn = connectToBlackBox();
-      $fileCreated = getDebuggerEvents($conn, $debuggerEventList);
-      // // disconnectServer($conn);
-      updateLocal($fileCreated);
-      
-      writeCheckpoint($checkpointFile, $checkPoint);
-   }
-
-   if($currentStatus < ++$checkPoint){
+   $key = "codepad_events";
+   if(!$checkPoint[$key]){
       //Codepad Events
       //select all event_id with type CodepadEvent
       printLog("Getting event_id(s) from master_events");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct event_id from master_events where event_type = 'CodepadEvent'";
-      $codePadEventList = getResult($connLocal, $query);
+      $codePadEventList = getResultArray($connLocal, $query, "event_id");
+
       disconnectServer($connLocal);
 
       printLog("Downloading codepad_events to local");
@@ -361,16 +346,18 @@
       // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "extensions";
+   if(!$checkPoint[$key]){
       //Extensions
       //select all master_event_id from local master_events
       printLog("Getting id(s) from master_events");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct id from master_events";
-      $masterEventIdList = getResult($connLocal, $query);
+      $masterEventIdList = getResultArray($connLocal, $query, "id");
+
       disconnectServer($connLocal);
 
       printLog("Downloading extensions to local");
@@ -379,15 +366,17 @@
       // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "tests";
+   if(!$checkPoint[$key]){
       //Test
       printLog("Getting session_id(s) from master_events");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct session_id from master_events where event_type = 'Test'";
-      $testidList = getResult($connLocal, $query);
+      $testidList = getResultArray($connLocal, $query, "session_id");
+
       disconnectServer($connLocal);
 
       printLog("Downloading tests to local");
@@ -396,24 +385,25 @@
       // disconnectServer($conn);
       updateLocal($fileCreated);
 
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
-   if($currentStatus < ++$checkPoint){
+   $key = "test_results";
+   if(!$checkPoint[$key]){
       //Test Results
       printLog("Getting session_id(s) from master_events");
       $conn = connectToLocal("capstoneLocal");
       $query = "SELECT distinct session_id from master_events where event_type = 'TestResult'";
-      $testResultList = getResult($conn, $query);
+      $testResultList = getResultArray($conn, $query, "session_id");
       disconnectServer($conn);
 
-      printLog("Downloading tests_results to local");
+      printLog("Downloading test_results to local");
       // $conn = connectToBlackBox();
-      $fileCreated = getTests($conn, $testResultList);
+      $fileCreated = getTestResults($conn, $testResultList);
       // disconnectServer($conn);
       updateLocal($fileCreated);
       
-      writeCheckpoint($checkpointFile, $checkPoint);
+      writeCheckpoint($checkPoint, $key);
    }
 
    // //////////////////////////////////////////////////////////////////////

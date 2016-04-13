@@ -1,6 +1,38 @@
 <?php
    include 'CoreFunctions.php';
    $endLine = "\n";
+
+   // $test = array();
+
+   // $test["started"] = 0;
+   // $test["init"] = 0;
+   // $test["inspectors"] = 1;
+   // $test["invocations"] = 1;
+   // $test["sessions"] = 1;
+   // $test["master_events"] = 0;
+   // $test["users"] = 1;
+   // $test["projects"] = 1;
+   // $test["packages"] = 1;
+   // $test["source_files"] = 1;
+   // $test["sourceIds"] = 0;
+   // $test["breakpoints"] = 1;
+   // $test["compile_inputs"] = 1;
+   // $test["fixtures"] = 0;
+   // $test["compile_events_and_outputs"] = 1;
+   // $test["source_hashes"] = 0;
+   // $test["stack_entries"] = 0;
+   // $test["bench_objects"] = 0;
+   // $test["bench_objects_fixture"] = 0;
+   // $test["codepad_events"] = 0;
+   // $test["extensions"] = 0;
+   // $test["tests"] = 0;
+   // $test["test_results"] = 0;
+
+   // print_r($test);
+   // writeCheckpoint($test, "init");
+   
+   print_r(readCheckpoint());
+
    // print_r(getStartEndDate());
    // echo exec('whoami');
    // $file = "downloadStatus";
@@ -11,7 +43,7 @@
 
    // printLog("Get all SourceFileID from local source_files");
    // $connLocal = connectToLocal("capstoneLocalForQA");
-   $conn = connectToBlackBox();
+   // $conn = connectToBlackBox();
    // $colName = "id";
    // // $query = "SELECT id from source_files";
    // $query = "SELECT ".$colName." from source_files";
@@ -31,25 +63,26 @@
    //    echo "NOT an object" . $endLine;
    // }
 
-   $colName = "user_id";
-   $query = "SELECT distinct s." .$colName. " FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
-   // $query = "SELECT distinct s.user_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+   // $colName = "user_id";
+   // $query = "SELECT distinct s." .$colName. " FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+   // // $query = "SELECT distinct s.user_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
    
-   //Store returned mysqli results object into $useridList
-   $userids = getResult($conn, $query);
-   $useridList = objToArray($userids, $colName);
+   // //Store returned mysqli results object into $useridList
+   // $userids = getResult($conn, $query);
+   // $useridList = objToArray($userids, $colName);
 
-   $useridFile = 'useridFile';
-   writeCheckpoint($useridFile, serialize($useridList));
-   // echo serialize($useridList);
+   // $useridFile = 'useridFile';
+   // writeCheckpoint($useridFile, serialize($useridList));
+   // // echo serialize($useridList);
 
-   $serializedId = readCheckpoint($useridFile);
-   // print_r(unserialize($serializedId));
-   $newArray = unserialize($serializedId);
-   // print_r($resultToArray);
-   $fileCreated = getProjects($conn, $newArray);
-   
-   disconnectServer($conn);
+   // $serializedId = readCheckpoint($useridFile);
+   // // print_r(unserialize($serializedId));
+   // $newArray = unserialize($serializedId);
+   // $new = array();
+   // // print_r($resultToArray);
+   // $fileCreated = getProjects($conn, $newArray);
+
+   // disconnectServer($conn);
 
    // $conn = connectToBlackBox();
    // $conn = connectToLocal('capstoneLocalForQA');
