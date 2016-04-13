@@ -21,6 +21,7 @@
          // echo $startDate . "\n" . $endDate . "\n";
       } else {
          echo "No arguments passed\n";
+         exit();
       }
    }
 
@@ -103,8 +104,23 @@
    }
 
    function getResult($connection, $query){
+      checkConnection($connection);
       $results = $connection->query($query);
-      return $results;
+      if(!$results){
+         die("Invalid query: " . mysql_error);
+      } else {
+         return $results;
+      }
+   }
+   
+   function objToArray($results, $colName){
+      $resultArray = array();
+      if($results != null){
+         while($row = $results->fetch_assoc()){
+            array_push($resultArray, $row[$colName]);
+         }
+      } 
+      return $resultArray;
    }
 
    function getPid($connection){
@@ -131,34 +147,67 @@
       return $participantList;
    }
 
-   function getTableContents($conn, $ids, $table, $field, $result_id){
+   function checkConnection($conn){
+      if(!mysqli_ping($conn)){
+         exit();
+      }
+   }
+
+   function getTableContents($conn, $ids, $table, $field){
       global $endLine;
 
-      if($ids->num_rows > 0){
-         $fileName = $table . "_out.csv";
-         echo "Created CSV file with filename of " . $fileName . $endLine;
-         $fp = fopen($fileName, 'w');
+      // if($ids->num_rows > 0){
+      // if(is_a($ids, 'mysqli_result')){
+      //    $fileName = $table . "_out.csv";
+      //    echo "Created CSV file with filename of " . $fileName . $endLine;
+      //    $fp = fopen($fileName, 'w');
 
-         foreach($ids as $id){
-            // echo $result[$result_id] . $endLine;
-            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id[$result_id]."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
+      //    if($ids->num_rows > 0){
+      //       foreach($ids as $id){
+      //          // echo $result[$result_id] . $endLine;
+      //          $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id[$result_id]."'";
+      //          // echo $query . $endLine;
+      //          $results = getResult($conn, $query);
 
-            if($results->num_rows > 0){
-               //returns the result object if it's not null
-               // echo "Writing " . $field ." ". $id[$result_id] . " to CSV file" . $endLine;
-               foreach ($results as $val) {
-                  fputcsv($fp, $val);       
+      //          if($results->num_rows > 0){
+      //             //returns the result object if it's not null
+      //             // echo "Writing " . $field ." ". $id[$result_id] . " to CSV file" . $endLine;
+      //             foreach ($results as $val) {
+      //                fputcsv($fp, $val);       
+      //             }
+      //          }
+      //       }
+
+      //       fclose($fp);
+      //       echo $table . " table download completed" . $endLine;
+      //       return $fileName;
+      //    }
+      // } else {
+         if(count($ids) > 0){
+            $fileName = $table . "_out.csv";
+            echo "Created CSV file with filename of " . $fileName . $endLine;
+            $fp = fopen($fileName, 'w');
+
+            foreach($ids as $id){
+               // echo $result[$result_id] . $endLine;
+               $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id."'";
+               // echo $query . $endLine;
+               $results = getResult($conn, $query);
+
+               if($results->num_rows > 0){
+                  //returns the result object if it's not null
+                  // echo "Writing " . $field ." ". $id[$result_id] . " to CSV file" . $endLine;
+                  foreach ($results as $val) {
+                     fputcsv($fp, $val);       
+                  }
                }
             }
+
+            fclose($fp);
+            echo $table . " table download completed" . $endLine;
+            return $fileName;
          }
-         fclose($fp);
-         echo $table . " table download completed" . $endLine;
-         return $fileName;
-      } else {
-         echo "Empty ids ..." . $endLine;
-      }
+      // }
    }
 
    function saveToCsv($filename, $results){
@@ -588,12 +637,38 @@
       }
    }
 
-   function getMasterEvents($conn, $userIds){
+   function getMasterEvents($conn, $userIds, $startDate, $endDate){
       $table = "master_events";
       $field = "user_id";
+      // $fileCreated = getTableContents($conn, $userIds, $table, $field, $field);
+      global $endLine;
 
-      $fileCreated = getTableContents($conn, $userIds, $table, $field, $field);
-      return $fileCreated;
+      if($userIds->num_rows > 0){
+         $fileName = $table . "_out.csv";
+         echo "Created CSV file with filename of " . $fileName . $endLine;
+         $fp = fopen($fileName, 'w');
+
+         foreach($userIds as $id){
+            // echo $result[$result_id] . $endLine;
+            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id."' and created_at between '" . $startDate . "' and '" . $endDate . "'";
+            // echo $query . $endLine;
+            $results = getResult($conn, $query);
+
+            if($results->num_rows > 0){
+               //returns the result object if it's not null
+               // echo "Writing " . $field ." ". $id[$result_id] . " to CSV file" . $endLine;
+               foreach ($results as $val) {
+                  fputcsv($fp, $val);       
+               }
+            }
+         }
+         fclose($fp);
+         echo $table . " table download completed" . $endLine;
+         return $fileName;
+      } else {
+         echo "Empty ids ..." . $endLine;
+      }
+      // return $fileCreated;
    }
 
    function getPackages($conn, $ids){
@@ -618,7 +693,8 @@
    }
 
    function getProjects($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "projects", "user_id", "user_id");
+      // $fileCreated = getTableContents($conn, $results, "projects", "user_id", "user_id");
+      $fileCreated = getTableContents($conn, $results, "projects", "user_id");
       return $fileCreated;
       /*
       if($results->num_rows > 0){
