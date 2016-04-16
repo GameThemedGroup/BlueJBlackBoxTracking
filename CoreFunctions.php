@@ -1,6 +1,7 @@
 <!-- <script src="sorttable.js"></script> -->
 
 <?php
+   date_default_timezone_set("America/Los_Angeles");
    $endLine = "\n";
    $logLevel = 1;
    $dbToUpdate = 'capstoneLocal';
@@ -20,7 +21,8 @@
          return $dateArray;
          // echo $startDate . "\n" . $endDate . "\n";
       } else {
-         echo "No arguments passed, script ended\n";
+         // echo "No arguments passed, script ended\n";
+         printLog("No arguments passed, script ended\n");
          exit();
       }
    }
@@ -92,17 +94,21 @@
                            lines terminated by '\\n'";
                            //ignore 1 lines";
          // echo $updateLocal;
-         echo "Updating " . $updateFileName . " to " . $tableName . " table" . $endLine;
+         // echo "Updating " . $updateFileName . " to " . $tableName . " table" . $endLine;
+         printLog("Updating " . $updateFileName . " to " . $tableName . " table");
          $result = $conn->query($updateLocal);
          if($result){
-            echo "Update complete" . $endLine;
+            // echo "Update complete" . $endLine;
+            printLog("Update complete");
             return TRUE;
          } else {
-            echo "Update failed " .$conn->error. $endLine;
+            // echo "Update failed " .$conn->error. $endLine;
+            printLog("Update failed " .$conn->error);
             return FALSE;
          }
       } else {
-         echo $updateFileName . " does not exist" . $endLine;
+         // echo $updateFileName . " does not exist" . $endLine;
+         printLog($updateFileName . " does not exist");
          return FALSE;
       }
       disconnectServer($conn);
@@ -116,9 +122,9 @@
       if(!$results){
          die("Invalid query, please make sure query is correct with all the right parameters" . $endLine);
          exit();
-      } else {
-         return $results;
-      }
+      } 
+      
+      return $results;
    }
 
    function getResultArray($connection, $query, $field){
@@ -128,6 +134,7 @@
          while($row = $results->fetch_assoc()){
             array_push($resultArray, $row[$field]);
          }
+         mysqli_free_result($results);
       } 
       return $resultArray;
    }
@@ -197,6 +204,7 @@
                   fputcsv($fp, $val);       
                }
             }
+            // mysqli_free_result($results);
          }
 
          fclose($fp);
@@ -887,7 +895,7 @@
       file_put_contents($fileName, serialize($status));
    }
 
-   function writeCheckpoint($checkPoint, $key){
+   function writeCheckpoint(&$checkPoint, $key){
       $checkPoint[$key] = 1;
       $checkPoint["started"] = 1;
       saveToFile("checkpoint", $checkPoint);

@@ -2,34 +2,21 @@
    // //Include only if running this page on a php without the include of CoreFunctions
    // include 'CoreFunctions.php';
 
-   // durationOfSpaceSmasherAPI();
-   // participationRate();
-   // lastFewEvents();
-   // topTenComileErrors();  
-   // numberOfCompilePerFile();
-   // numberOfCompilePerTodo();
-   // numberOfGameExecution();
-   // invokeExceptions();
-   // invocationsPerUser();
-   // getUserList();
+   // //Question:
+   // //
+   // //Answer: 
+   // //
+   // //Implication of answer:
+   // //
+   // //Answer's correctness: 
+   // //
+   // //Methods for improving correctness: 
+   // //
 
-   // $conn = connectToLocal("capstoneLocalForQA");
-   // $query = "select source_time from master_events where id = 720536179";
-   // $result = getResult($conn, $query);
-
-   // foreach($result as $info){
-   //    echo $info['source_time'];
-   //    $query = "date_format(".$info['source_time'].",%Y-%m-%d %T)";
-   //    $conn->query($query);
-   // }
-
-   // disconnectFromBlackBox($conn);
-
+   $endLine = "\n";
 
    function getUserList(){
-      //Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
-      //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
-      //anything which identifies as end of a file edit (the only event says the file is being work on)
+
       $conn = connectToLocal('capstoneLocal');
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
@@ -52,46 +39,47 @@
    }
 
    function invocationsPerUser(){
-      //Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
-      //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
-      //anything which identifies as end of a file edit (the only event says the file is being work on)
+      // //Question (Why): 
+      // //Total time student spent on different files. Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
+      
+      // //Answer:  
+      // //Count of different results when a file has been invoked. Majority of the invocation were successful, none of the invocation caused compile_error
+      // //only three users had invocations that was terminated, and about ten users had exceptions during an invocation.
+      // //Implication of answer: Successful invocation basically means the invocation was invoked without compile error, but on the other side we don't know 
+      // //what causes a terminated invocation.
+      
+      // //Answer's correctness: 
+      // //If the tracking feature in BlueJ supports when an invocation has been terminated,
+      // //then we can say if a specific invocation, the main game, has been triggered for certain amount of time. 
+      // //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
+      // //anything which identifies as end of a file edit (the only event says the file is being work on)
+      
+      // //Methods for improving correctness: 
+      // //Suggest tracking time for invocation to Blackbox staffs
+
       $conn = connectToLocal('capstoneLocal');
       $query = "select id from users order by id asc";
-      $useridList = getResult($conn, $query);
+      // $useridList = getResult($conn, $query);
+      $useridList = getResultArray($conn, $query, "id");
       $startDate = '2016-01-01';
       $endDate = '2016-01-25';
+      $arrData = array("chart" => initChartProperties());
+      $propertiesToChange = array(
+            "caption" => "Number of Invocation Results by Type Per User",
+            "xAxisName"=> "User and Invocation Result Type",
+            "yAxisName"=> "Number of Result",
+         );
 
-      $arrData = array(
-         "chart" => array(
-            "caption" => "Number of Invocations by Type Per User",
-            "labelDisplay" => "auto",
-            
-            "showvalues" => "1",
-            "showyaxisvalues" => "1",
-            "xAxisName"=> "User and Invocation Type",
-            "yAxisName"=> "Number of Invocations",
-            "showAlternateHGridColor" => "1",
-            
-            "paletteColors" => "#0075c2, #ff0000, #33cc33",
-            "bgColor" => "#ffffff",
-            "borderAlpha"=> "20",
-            "canvasBorderAlpha"=> "0",
-            "usePlotGradientColor"=> "0",
-            "plotBorderAlpha"=> "10",
-            "plotHighlightEffect"=> "fadeout",
-            "xAxisLineColor" => "#999999",
-            "divlineColor" => "#999999",
-            "divLineIsDashed" => "1"
-         )
-      );
+      modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
-      //////////////////////////
       $arrData['dataset'] = array();
       $arrData['categories'] = array();
-      $query = "select distinct result from invocations";
-      $resultTypes = getResult($conn, $query);
+      $query = "select distinct result from invocations"; // returns 4 result types
+      // $resultTypes = getResult($conn, $query);
+      $resultTypes = getResultArray($conn, $query, "result");
       
-      if($useridList->num_rows > 0){
+      // if($useridList->num_rows > 0){
+      if(count($useridList) > 0){   
          //push category into categories in $arrData()
          //array_push($arrData['categories'], array('category' => $category));
 
@@ -103,7 +91,8 @@
             // array_push($arrData['dataset'], array('seriesname'=>$type['result'], 'data'=>array()));
             $data = array();
             foreach($useridList as $user){
-               $query = "SELECT result, count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.code like '%Main.main%' and invocations.result='".$type['result']. "' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user['id']." group by invocations.result";
+               // $query = "SELECT result, count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.code like '%Main.main%' and invocations.result='".$type['result']. "' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user['id']." group by invocations.result";
+               $query = "SELECT count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.code like '%Main.main%' and invocations.result='".$type. "' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user." group by invocations.result";
                // echo $query . "<br>";
                //returns all invocations of a User
                $invocationEvents = getResult($conn, $query);
@@ -115,27 +104,28 @@
                   // $seriesname = "";
                   while($row = $invocationEvents->fetch_assoc()) {
                      array_push($data, array('value' => $row['count']));
-                     // $seriesname =  $row['result'];
                   }
                } else {
                   array_push($data, array('value' => ''));
                }
 
-               if (empty($arrData['categories']))
-                  array_push($category, array('label' => $user['id']));
+               // if (empty($arrData['categories']))
+               //    // array_push($category, array('label' => $user['id']));
+                  array_push($category, array('label' => $user));
             }
 
             array_push($arrData['dataset'], 
                array(
-                  'seriesname' => $type['result'], 
+                  'seriesname' => $type, 
                   'data' => $data
                   )
                );
 
-            if (empty($arrData['categories'])){
+            // if (empty($arrData['categories'])){
                // category label are individual user
                array_push($arrData['categories'], array('category' => $category));
-            }
+            // $arrData['categories'] = array('category' => $category);
+            // }
          }
 
          // echo "<pre>";
@@ -143,60 +133,19 @@
          // echo "</pre>";
 
          //encode php data into JSON format
-         $jsonEncodedData = json_encode($arrData, true);
+         // $jsonEncodedData = json_encode($arrData, true);
          //create chart object with JSON data
-         $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "bottomRight", "json", $jsonEncodedData);
-         // Render the chart
-         $columnChart->render();
-      }
-      
-      //////////////////////////////
-
-      
-      // //Original code
-      /*
-      $arrData["data"] = array();
-      if($useridList->num_rows > 0){
-         echo "Total Users: " . $useridList->num_rows . "<br>";
-         foreach($useridList as $user){
-            // echo $user['id'] . "<br>";
-            // $query = "SELECT event_id From master_events WHERE event_type='Invocation' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user[id];
-            $query = "SELECT result, count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.code like '%Main.main%' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user['id']." group by invocations.result";
-            // echo $query . "<br>";
-            $invocationEvents = getResult($conn, $query);
-
-            if($invocationEvents->num_rows > 0){
-               // echo "user_id: " . $user['id'] . "<br>";
-               printResultInTable($invocationEvents);
-
-               while($row = $invocationEvents->fetch_array()) {
-                  array_push($arrData['data'], 
-                     array(
-                        'label' => "UserID: " . $user['id']. "<br>Invocation Type: " .$row['result'],
-                        'value' => $row['count']
-                     )
-                  );
-               }
-            }
-         }
-
-         // $jsonEncodedData = json_decode($arrData, true);
-         $jsonEncodedData = json_encode($arrData);
-         // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
-         $columnChart = new FusionCharts("column2D", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
+         // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1120, 650, "bottomRight", "json", $jsonEncodedData);
          // Render the chart
          // $columnChart->render();
+         createChartObj($arrData, "mscolumn2d")->render();
       }
-      */
       
-
       disconnectServer($conn);
    }
 
    function invokeExceptions(){
-      //Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
-      //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
-      //anything which identifies as end of a file edit (the only event says the file is being work on)
+   // //Not needed, as invocation per user does it
       $conn = connectToLocal('capstoneLocal');
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
@@ -237,97 +186,115 @@
    }
 
    function numberOfGameExecution(){
-      //Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
-      //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
-      //anything which identifies as end of a file edit (the only event says the file is being work on)
+      // //Question (why):
+      // //How many times has the game been ran
+
+      // //Answer: 
+      // //Display number of times main.main({}), the function invoked to run the game, has been called per user
+
+      // //Implication of answer:
+      // //Min number of calls was 0 and the maximum was 136. In a month time for one assignment, a student ran the game 136 times, which averaged
+      // //out to running the game at least 5 times a day.
+
+      // //Answer's correctness: 
+      // //The number of invocations called to run the game only showes how many times the game has be ran, but not how long it has been played.
+      // //The high number of calling main.main({}) could be called just to see if the game compiles and runs.
+
+      // //Methods for improving correctness: 
+      // //Recommend adding an event when an invoked function ends. 
+      // //We could also assume the time it took from one game execution to the next execution as the time it took students to fix or play the game.
+      global $endLine;
+
       $conn = connectToLocal('capstoneLocal');
       $query = "select id from users order by id asc";
-      $useridList = getResult($conn, $query);
+      // $useridList = getResult($conn, $query);
+      $useridList = getResultArray($conn, $query, "id");
       $startDate = '2016-01-01';
       $endDate = '2016-01-25';
 
-      if($useridList->num_rows > 0){
-         echo "Total Users: " . $useridList->num_rows . "<br>";
+      $arrData = array("chart" => initChartProperties());
+      $propertiesToChange = array(
+            "caption" => "Top 10 Compiler Errors",
+            "xAxisName"=> "Error Type",
+            "yAxisName"=> "Number of Errors",
+      );
+
+      modifyMultiProperties($arrData["chart"], $propertiesToChange);
+      // if($useridList->num_rows > 0){
+      if(count($useridList) > 0){
+         // echo "Total Users: " . count($useridList) . $endLine;
+         $category = array();
+
          foreach($useridList as $user){
+
             // $numberOfMain = array();
             // echo "user_id: ".$user[id]."<br>";
             //using user_id, query for all event_id events where event_type = Invocations between the date 2016-01-01 to 2016-01-25
             //which is the time up till the first assignment due date
-            $query = "SELECT event_id From master_events WHERE event_type='Invocation' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user[id];
+            // $query = "SELECT event_id From master_events WHERE event_type='Invocation' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user[id];
+            $query = "SELECT event_id From master_events WHERE event_type='Invocation' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user;
             // echo $query . "<br>";
-            $invocationEvents = getResult($conn, $query);
+            // $invocationEvents = getResult($conn, $query);
+            $invocationEvents = getResultArray($conn, $query, "event_id");
 
-            if($invocationEvents->num_rows > 0){
-               echo "user_id: ".$user[id]."<br>";
-               echo "Number of Invocations: " . $invocationEvents->num_rows . " bewteen " . $startDate . "until " . $endDate. "<br>";
+            // if($invocationEvents->num_rows > 0){
+            if(count($invocationEvents) > 0){
+               if (empty($arrData['categories']))
+                  // array_push($category, array('label' => $user['id']));
+                  array_push($category, array('label' => $user));
+               // echo "user_id: ".$user[id]."<br>";
+               // echo "user_id: ".$user.$endLine;
+               // echo "Number of Invocations: " . $invocationEvents->num_rows . " bewteen " . $startDate . "until " . $endDate. "<br>";
+               // echo "Number of Invocations: " . $invocationEvents->num_rows . $endLine;
+               // echo " bewteen " . $startDate . "until " . $endDate. $endLine;
+               
                $numberOfMainInvoked = 0; 
                foreach($invocationEvents as $event){
-                  $query = "SELECT code, result From invocations where code like '%Main.main({ })%' and id=" . $event[event_id];
+                  // $query = "SELECT code, result From invocations where code like '%Main.main({ })%' and id=" . $event[event_id];
+                  $query = "SELECT result From invocations where code like '%Main.main({ })%' and id=" . $event;
                   // echo $query ."<br>";
                   $results = getResult($conn, $query);
 
                   if($results->num_rows > 0){
                      $numberOfMainInvoked+=$results->num_rows;
                   }
-
-                  // // echo "event_id= " .$event[event_id] . " session_id= " . $event[session_id]. "<br>";
-                  // while($row = $results->fetch_assoc()){
-                  //    foreach($row as $field){
-                  //       // echo "File name= " . $field . "<br>";
-                  //       if(!array_key_exists($field, $arrayOfFileNames)){
-                  //          $arrayOfFileNames[$field] = 1;
-                  //       } else {
-                  //          $arrayOfFileNames[$field]++;
-                  //       }
-                  //    }
-                  // }
                }
-               echo "Number of Main.main({}) invoked: " . $numberOfMainInvoked . "<br><br>";
-               $numberOfMainInvoked = 0;            
-               printResultInTable($invocationEvents);
+               // echo "Number of Main.main({}) invoked: " . $numberOfMainInvoked . "<br><br>";
+               // $numpberOfMainInvoked = 0;            
+               // printResultInTable($invocationEvents);
             }
+
+            unset($invocationEvents);
          }
       }
    }
 
    function numberOfCompilePerTodo(){
-      //Compute the number of times a TODO file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
-      //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
-      //anything which identifies as end of a file edit (the only event says the file is being work on)
+      // //Question:
+      // //Total time per "to-do"
+      
+      // //Answer: 
+      // //Compute the number of times a TODO file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
+      
+      // //Implication of answer:
+      // //Some To-do files have high number of compilation as much as 100 times.
+      // //Which could be an indicator of the difficulties student encounters when learning introductory programming class.
+      // //The number of compilation decreases over the future To-do(s) which could mean students are learning and finding the later 
+      // //tasks easier to solve.
+      
+      // //Answer's correctness: 
+      // //Total time spent on a file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
+      // //anything which identifies as end of a file edit (the only event says the file is being work on)
+      
+      // //Methods for improving correctness: 
+      // //Recommend adding an event when an invoked function ends. 
+      // //We could also assume the time it took from one game execution to the next execution as the time it took students to fix or play the game.
+
       $conn = connectToLocal('capstoneLocal');
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
       $startDate = '2016-01-01';
       $endDate = '2016-01-25';
-
-      // $arrData = array(
-      //    "chart" => array(
-      //       "caption" => "Total Sessions Per User ID",
-      //       "paletteColors" => "#0075c2",
-      //       "bgColor" => "#ffffff",
-      //       "borderAlpha"=> "20",
-      //       "canvasBorderAlpha"=> "0",
-      //       "usePlotGradientColor"=> "0",
-      //       "plotBorderAlpha"=> "10",
-      //       "plotHighlightEffect"=> "fadeout",
-      //       "showXAxisLine"=> "1",
-      //       "showlegend" => "1",
-      //       // "showlabels" => "0",
-      //       // "labelDisplay" => "wrap",
-      //       "showvalues" => "1",
-      //       "showyaxisvalues" => "1",
-      //       "showxaxisvalues" => "0",
-      //       "xAxisName"=> "User IDs",
-      //       "yAxisName"=> "Number of Sessions",
-      //       "xAxisLineColor" => "#999999",
-      //       "divlineColor" => "#999999",
-      //       "divLineIsDashed" => "1",
-      //       "showAlternateHGridColor" => "0"
-      //    )
-      // );
-
-      // $arrData["dataset"] = array();
-      // $arrData['categories'] = array();
 
       if($useridList->num_rows > 0){
          echo "Total Users: " . $useridList->num_rows . "<br>";
@@ -368,35 +335,103 @@
                } else {
                   echo "No Compile Event<br><br>";
                }
-               // foreach($arrayOfFileNames as $file => $value){
-               //    // echo $file;
-               //    if(!array_key_exists($file, $arrData['categories']))
-               //       array_push($arrData['categories'], array('label' => $file));
-               // }
-               // print_r($arrData['categories']);
-               // array_push($arrData["dataset"], 
-               //    array(
-               //       "seriesname" => "UserID: " . $user["id"],
-               //       "data" => $arrayOfFileNames
-               //    )
-               // );
-               // print_r($arrData['dataset']);
             }
          }
 
-         // $jsonEncodedData = json_decode($arrData, true);
-         // $jsonEncodedData = json_encode($arrData);
-         // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
-         // $columnChart = new FusionCharts("column2D", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
-         // Render the chart
-         // $columnChart->render();
-         // echo $jsonEncodedData;
-         // Close the database connection
          disconnectServer($conn);
       }
    }
 
+   function numberOfCompilePerFile(){
+      /// //Question:
+      // //Total time per "to-do"
+      
+      // //Answer: 
+      // //Compute the number of times any file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
+      
+      // //Implication of answer:
+      // //Some files have higher number of compilation than the To-do(s).
+      // //Which could be an indicator of the difficulties student encounters on a particular assignment.
+      
+      // //Answer's correctness: 
+      // //Total time spent on a file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
+      // //anything which identifies as end of a file edit (the only event says the file is being work on)
+      
+      // //Methods for improving correctness: 
+      // //Recommend adding an event when an invoked function ends. 
+      // //We could also assume the time it took from one game execution to the next execution as the time it took students to fix or play the game.
+
+      $conn = connectToLocal('capstoneLocal');
+      $query = "select id from users order by id";
+      $useridList = getResult($conn, $query);
+      $startDate = '2016-01-12';
+      $endDate = '2016-01-25';
+
+      if($useridList->num_rows > 0){
+         echo "Total Users: " . $useridList->num_rows . "<br>";
+         foreach($useridList as $user){
+            $arrayOfFileNames = array();
+            echo "user_id: ".$user['id']."<br>";
+            //using user_id, query for all event_id and session_id events where event_type = CompileEvents between the date 2016-01-01 to 2016-01-25
+            //which is the time up till the first assignment due date
+            $query = "SELECT event_id, session_id From master_events WHERE event_type='CompileEvent' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user['id'];
+            // echo $query;
+            $compileEvents = getResult($conn, $query);
+
+            //To retrieve source_file name we need to match compile_input.source_file_id to source_files.id
+            //Then pick out those matches by selecting rows in compile_inputs.compile_event_id that is found from the above query
+            //that is event_id when event_type = CompileEvent from the master_events
+            if($compileEvents->num_rows > 0){
+               foreach($compileEvents as $event){
+                  $query = "SELECT source_files.name From source_files JOIN compile_inputs on compile_inputs.source_file_id=source_files.id where compile_inputs.compile_event_id='".$event['event_id']."' group by source_files.name";
+                  $results = getResult($conn, $query);
+                  // echo "event_id= " .$event[event_id] . " session_id= " . $event[session_id]. "<br>";
+                  while($row = $results->fetch_assoc()){
+                     foreach($row as $field){
+                        // echo "File name= " . $field . "<br>";
+                        if(!array_key_exists($field, $arrayOfFileNames)){
+                           $arrayOfFileNames[$field] = 1;
+                        } else {
+                           $arrayOfFileNames[$field]++;
+                        }
+                     }
+                  }
+               }
+            }
+
+            if(count($arrayOfFileNames)>0){
+               //arsort($arrayOfFileNames);
+               echo "<pre>";
+               print_r($arrayOfFileNames);
+               echo "</pre>"; 
+            } else {
+               echo "No Compile Event<br><br>";
+            }
+         }
+      }
+   }
+
    function occuranceOfSessions(){
+      // //Question:
+      // //When do student usually do their work? 
+      // //Which day of the week has the highest number of running sessions?
+      
+      // //Answer: 
+      // //The highest occurance of sessions are usually on Fridays or a few days before the Friday.
+      // //Early week days and weekend has very low session occurance.
+      
+      // //Implication of answer:
+      // //The high occurnace of sessions on Friday may indicates most students do their homework just as they are about to be due.
+      // //Another possibility is the class isn't challenging enough that enable students to their work at last minute.
+      
+      // //Answer's correctness: 
+      // //Since the graph data shows the "total" number of sessions per day, than the data could be influence is a student is out performing 
+      // //other students by spending more time working. There are days with zero sessions, this could be possible if no student work on their 
+      // //assignment or student might opt-out of the tracking program after the assignment is given.
+      
+      // //Methods for improving correctness: 
+      // //Represent the data using per student's session time per day instead of summation of all students
+
       echo "<div id='topRightGraph'></div>";
 
       echo "<div>";
@@ -544,61 +579,22 @@
       }
    }
 
-   function numberOfCompilePerFile(){
-      //Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
-      //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
-      //anything which identifies as end of a file edit (the only event says the file is being work on)
-      $conn = connectToLocal('capstoneLocal');
-      $query = "select id from users order by id";
-      $useridList = getResult($conn, $query);
-      $startDate = '2016-01-12';
-      $endDate = '2016-01-25';
-
-      if($useridList->num_rows > 0){
-         echo "Total Users: " . $useridList->num_rows . "<br>";
-         foreach($useridList as $user){
-            $arrayOfFileNames = array();
-            echo "user_id: ".$user['id']."<br>";
-            //using user_id, query for all event_id and session_id events where event_type = CompileEvents between the date 2016-01-01 to 2016-01-25
-            //which is the time up till the first assignment due date
-            $query = "SELECT event_id, session_id From master_events WHERE event_type='CompileEvent' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user['id'];
-            // echo $query;
-            $compileEvents = getResult($conn, $query);
-
-            //To retrieve source_file name we need to match compile_input.source_file_id to source_files.id
-            //Then pick out those matches by selecting rows in compile_inputs.compile_event_id that is found from the above query
-            //that is event_id when event_type = CompileEvent from the master_events
-            if($compileEvents->num_rows > 0){
-               foreach($compileEvents as $event){
-                  $query = "SELECT source_files.name From source_files JOIN compile_inputs on compile_inputs.source_file_id=source_files.id where compile_inputs.compile_event_id='".$event['event_id']."' group by source_files.name";
-                  $results = getResult($conn, $query);
-                  // echo "event_id= " .$event[event_id] . " session_id= " . $event[session_id]. "<br>";
-                  while($row = $results->fetch_assoc()){
-                     foreach($row as $field){
-                        // echo "File name= " . $field . "<br>";
-                        if(!array_key_exists($field, $arrayOfFileNames)){
-                           $arrayOfFileNames[$field] = 1;
-                        } else {
-                           $arrayOfFileNames[$field]++;
-                        }
-                     }
-                  }
-               }
-            }
-
-            if(count($arrayOfFileNames)>0){
-               //arsort($arrayOfFileNames);
-               echo "<pre>";
-               print_r($arrayOfFileNames);
-               echo "</pre>"; 
-            } else {
-               echo "No Compile Event<br><br>";
-            }
-         }
-      }
-   }
-
    function topTenComileErrors(){
+      // //Question:
+      // //Do we have similar compiler errors as the other previous researches that used the Blackbox database.
+      
+      // //Answer: 
+      // //Missing ";" is the number 1 compiler error follow by other types of syntac errors.
+      
+      // //Implication of answer:
+      // //For the top few errors, we shared similar outcome as the other researches where syntac error has the highest number of errors.
+      
+      // //Answer's correctness: 
+      // //The error is only as good as the BlueJ IDE is able to identify and sends the corresponding error correctly to the server.
+      
+      // //Methods for improving correctness: 
+      // //
+
       $conn = connectToLocal('capstoneLocalForQA');
       //compile_error from invocations when compiling the generated code (e.g. be- cause the user entered invalid parameters)
       //$query = "select count(compile_error), compile_error from invocations where result = 'compile_error' group by compile_error order by count(compile_error) desc limit 10";
@@ -614,30 +610,18 @@
       // printQueryResults($results);
       // echo "</table>";
       if($result){
-         $arrData = array(
-            "chart" => array(
+         $arrData = array("chart" => initChartProperties());
+         $propertiesToChange = array(
                "caption" => "Top 10 Compiler Errors",
-               "paletteColors" => "#0075c2",
-               "bgColor" => "#ffffff",
-               "borderAlpha"=> "20",
-               "canvasBorderAlpha"=> "0",
-               "usePlotGradientColor"=> "0",
-               "plotBorderAlpha"=> "10",
-               "plotHighlightEffect"=> "fadeout",
-               "showXAxisLine"=> "1",
-               "showlegend" => "1",
-               "labelDisplay" => "rotate",
-               "showvalues" => "1",
-               "showyaxisvalues" => "1",
-               "showxaxisvalues" => "0",
                "xAxisName"=> "Error Type",
                "yAxisName"=> "Number of Errors",
-               "xAxisLineColor" => "#999999",
-               "divlineColor" => "#999999",
-               "divLineIsDashed" => "1",
-               "showAlternateHGridColor" => "0"
-            )
-         );
+               "labelDisplay" => "rotate",
+               "paletteColors" => "#0075c2",
+               "showxaxisvalues" => "0",
+            );
+
+         modifyMultiProperties($arrData["chart"], $propertiesToChange);
+
 
          $arrData["data"] = array();
          while($row = $result->fetch_array()) {
@@ -661,6 +645,23 @@
    }
 
    function lastFewEvents(){
+      // //Question:
+      // //What do students do just before they close BlueJ?
+      
+      // //Answer: 
+      // //Event like compilation and invocation were the most common events that occured before BlueJ was closed
+      
+      // //Implication of answer:
+      // //Those events were immediately before BlueJ closed, which could mean the student might have compiled for the last
+      // //before they closed BlueJ for the day. Or a student invoked a function just to see if it works and then closed BlueJ
+      
+      // //Answer's correctness: 
+      // //The data doesn't provide enough detail as to what other things students might be doing just before they closed BlueJ
+      // //The only noticable events in invocation and compilation
+      
+      // //Methods for improving correctness: 
+      // //Represent the data using per student's session time per day instead of summation of all students
+
       //Find all events in master_events when BlueJ closes, name='bluej_finish'
       $conn = connectToLocal('capstoneLocalForQA');
 
@@ -688,7 +689,7 @@
                   $min = 0;
             }
 
-            $query = "SELECT * From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND sequence_num between " . $min . " AND " . $max;
+            $query = "SELECT event_type From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND sequence_num between " . $min . " AND " . $max;
             echo $query . "<br>";
             $results = getResult($conn, $query);
 
@@ -781,32 +782,18 @@
       $result = getResult($conn, $query);
 
       if($result){
-
-         $arrData = array(
-            "chart" => array(
-               "caption" => "Total Sessions Per User ID",
-               "paletteColors" => "#0075c2",
-               "bgColor" => "#ffffff",
-               "borderAlpha"=> "20",
-               "canvasBorderAlpha"=> "0",
-               "usePlotGradientColor"=> "0",
-               "plotBorderAlpha"=> "10",
-               "plotHighlightEffect"=> "fadeout",
-               "showXAxisLine"=> "1",
-               "showlegend" => "1",
-               // "showlabels" => "0",
-               // "labelDisplay" => "wrap",
-               "showvalues" => "1",
-               "showyaxisvalues" => "1",
-               "showxaxisvalues" => "0",
-               "xAxisName"=> "User IDs",
-               "yAxisName"=> "Number of Sessions",
-               "xAxisLineColor" => "#999999",
-               "divlineColor" => "#999999",
-               "divLineIsDashed" => "1",
-               "showAlternateHGridColor" => "0"
-            )
+         $arrData = array("chart" => initChartProperties());
+         $propertiesToChange = array(
+            "caption" => "Total Sessions Per User ID",
+            "xAxisName"=> "User IDs",
+            "yAxisName"=> "Number of Sessions",
+            "paletteColors" => "#0075c2",
+            "bgColor" => "#ffffff",
+            "showXAxisLine"=> "1",
+            "showlegend" => "1",
          );
+
+         modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
          $arrData["data"] = array();
          while($row = $result->fetch_array()) {
@@ -836,6 +823,17 @@
    }
 
    function durationOfSpaceSmasherAPI(){
+      // //Question:
+      // //
+      // //Answer: 
+      // //
+      // //Implication of answer:
+      // //
+      // //Answer's correctness: 
+      // //
+      // //Methods for improving correctness: 
+      // //
+
       $conn = connectToLocal('capstoneLocalForQA');
 
       //query for all SpaceSmasherAPI from Packge

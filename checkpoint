@@ -1,1 +1,1 @@
-2
+a:23:{s:7:"started";i:1;s:4:"init";i:1;s:10:"inspectors";i:1;s:11:"invocations";i:1;s:8:"sessions";i:1;s:13:"master_events";i:1;s:5:"users";i:1;s:8:"projects";i:1;s:8:"packages";i:1;s:12:"source_files";i:1;s:9:"sourceIds";i:1;s:11:"breakpoints";i:1;s:14:"compile_inputs";i:1;s:8:"fixtures";i:1;s:26:"compile_events_and_outputs";i:1;s:13:"source_hashes";i:1;s:13:"stack_entries";i:1;s:13:"bench_objects";i:1;s:21:"bench_objects_fixture";i:1;s:14:"codepad_events";i:1;s:10:"extensions";i:0;s:5:"tests";i:1;s:12:"test_results";i:1;}

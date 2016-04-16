@@ -24,6 +24,7 @@
 <?php
    include 'CoreFunctions.php';
    include 'questionsToAnswer.php';
+   include 'graphFunctions.php';
    // require_on  ce("phpChart_Lite/conf.php");
    include("fusioncharts/fusioncharts.php");
 
@@ -110,85 +111,16 @@
    <a href='guiPage.php?topTenComileErrors=true'>Top Ten Compile Errors</a></br>
    <!-- <a href='guiPage.php?durationBetweenTodo=true'>Duration Between Todos</a></br> -->
    <a href='guiPage.php?occuranceOfSessions=true'>Occurance of Sessions</a></br>
+   <a href='guiPage.php?numberOfGameExecution=true'>Number of Game Execution</a></br>
+   <a href='guiPage.php?participationRate=true'>Participation Rate</a></br>
+   <a href='guiPage.php?lastFewEvents=true'>Last few events before BlueJ closes</a></br>
+   <a href='guiPage.php?durationOfSpaceSmasherAPI=true'>Duration on SpaceSmasherAPI</a></br>
+   
 </div>
 
 <div id="topRight">
    <?php
-      // if(isset($_GET['graphTotalSessionsPerUser'])){
-      //    graphTotalSessionsPerUser();
-      // }
-      // if(isset($_GET['numberOfCompilePerFile'])){
-      //    numberOfCompilePerFile();
-      // }
-      // if(isset($_GET['numberOfCompilePerTodo'])){
-      //    numberOfCompilePerTodo();
-      // }
-      // if(isset($_GET['invocationsPerUser'])){
-      //    invocationsPerUser();
-      // }
-      // if(isset($_GET['topTenComileErrors'])){
-      //    topTenComileErrors();
-      // }
-      // if(isset($_GET['durationBetweenTodo'])){
-      //    durationBetweenTodo();
-      // }
-      // if(isset($_GET['occuranceOfSessions'])){
-      //    occuranceOfSessions();
-      // }
-      /*
-      // ////////////////////////////////////////////
-      // phpChart
 
-      echo "<pre>";
-      print_r($new_array1);
-      echo "</pre>";
-      $pc = new C_PhpChartX(array(array(1,2,3,4,5,6)), 'basic_chart');
-      $pc = new C_PhpChartX(array($new_array1), 'basic_chart');
-      $pc->set_animate(true);
-      $pc->set_title(array('text'=>'Basic Chart'));
-      //set legend
-      $pc->set_legend(array('show'=>false));
-      $pc->draw();
-      // ////////////////////////////////////////////
-      
-      ///////////////////////////////////////
-      //chart4php
-      include("charts4php/lib/inc/chartphp_dist.php");
-      $p = new chartphp();
-
-      print_r($new_array);
-      echo json_encode($new_array);
-      set few params
-      $p->data =array(array(3,7,9,1,4,6,8,2,5));
-      $p->data =array($new_array);
-      $temp = array(array(array("2010/10",48.25),array("2011/01",238.75),array("2011/02",95.50),array("2011/03",300.50),array("2011/04",286.80),array("2011/05",400)));
-      $p->data = $temp;
-      // $p->data_sql("SELECT user_id, count(user_id) from sessions group by user_id");
-      $p->chart_type = "line";
-      $p->xlabel = "Users";
-      $p->ylabel = "Total Sessions";
-      $p->export = false;
-
-      // render chart and get html/js output
-      $out = $p->render('c1');
-      echo $out;
-      ////////////////////////////////////////////
-
-      require_once("questionsToAnswer.php");
-      require_once 'questionsToAnswer.php';
-      numberOfCompilePerFile();
-      durationOfSpaceSmasherAPI();
-      participationRate();
-      lastFewEvents();
-      if(isset($_POST['submit2'])){
-         $id = $_POST['user_id'];
-         $query = "SELECT * FROM master_events WHERE user_id='".$id."'";
-         $conn = connectToLocal("capstoneLocal");
-         $result = getResult($conn, $query);
-         disconnectServer($conn);
-         printResultInTable($result);
-      }
-      */
    ?>
 </div>
 
@@ -229,6 +161,18 @@
       }
       if(isset($_GET['occuranceOfSessions'])){
          occuranceOfSessions();
+      }
+      if(isset($_GET['numberOfGameExecution'])){
+         numberOfGameExecution();
+      }
+      if(isset($_GET['participationRate'])){
+         participationRate();
+      }
+      if(isset($_GET['lastFewEvents'])){
+         lastFewEvents();
+      }
+      if(isset($_GET['durationOfSpaceSmasherAPI'])){
+         durationOfSpaceSmasherAPI();
       }
 
    ?>

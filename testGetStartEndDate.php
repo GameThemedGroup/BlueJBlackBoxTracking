@@ -1,7 +1,39 @@
 <?php
    include 'CoreFunctions.php';
+   include 'graphFunctions.php';
    $endLine = "\n";
 
+   // $arrData = array("chart" => initChartProperties());
+   // print_r($arrData);
+
+   // $propertiesToChange = array(
+   //       "caption" => "Number of Invocation Results by Type Per User",
+   //       "xAxisName" => "User and Invocation Result Type",
+   //       "yAxisName" => "Number of Result",
+   //    );
+
+   // modifyMultiProperties($arrData["chart"], $propertiesToChange);
+   // print_r($arrData);
+
+   // $test = array();
+   // $test["blah"] = "Hello world";
+   // $test["foo"] = "apple";
+   // $test["a"] = "bababa";
+   // $test["b"] = "lol";
+   // $test["c"] = "hihi";
+   // $test["d"] = "bebe";
+   // $test["e"] = "hohoho";
+   // $test["f"] = "hey hey";
+
+   // print_r($test);
+
+   // $newArray = array("a" => "1", "b" => "2");
+
+   // modifyMultiProperties($test, array("a" => "10"));
+   // print_r($test);
+
+   // modifyChartProperty($test, "c", "1234567890");
+   // print_r($test);
    // $test = array();
 
    // $test["started"] = 0;
@@ -14,7 +46,7 @@
    // $test["projects"] = 1;
    // $test["packages"] = 1;
    // $test["source_files"] = 1;
-   // $test["sourceIds"] = 0;
+   // $test["sourceIds"] = 1;
    // $test["breakpoints"] = 1;
    // $test["compile_inputs"] = 1;
    // $test["fixtures"] = 0;
@@ -30,7 +62,7 @@
 
    // print_r($test);
    // writeCheckpoint($test, "init");
-   
+
    print_r(readCheckpoint());
 
    // print_r(getStartEndDate());

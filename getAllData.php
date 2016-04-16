@@ -4,9 +4,10 @@
    //chmod 775 [directory name]
    //Change contents in folder to 
    //chmod 664 [directory name]/*
+   ini_set('memory_limit', '512M');
 
    include 'CoreFunctions.php';
-   date_default_timezone_set("America/Los_Angeles"); 
+   date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 
    // //Read status from downloadStatus file
@@ -19,10 +20,10 @@
 
    if(array_key_exists("started", $checkPoint) && $checkPoint["started"] == 1){
       printLog("Resuming from Checkpoint");
-      $useridList = restoreFromFile($useridFile);
-      $sessionidList = restoreFromFile($sessionidFile);
-      $projectidList = restoreFromFile($projectidFile);
-      $sourceFileIdList = restoreFromFile($sourceFileidFile);
+      // $useridList = restoreFromFile($useridFile);
+      // $sessionidList = restoreFromFile($sessionidFile);
+      // $projectidList = restoreFromFile($projectidFile);
+      // $sourceFileIdList = restoreFromFile($sourceFileidFile);
    }
 
    // //Get start and end date for the data to download
@@ -52,16 +53,19 @@
       saveToFile($sessionidFile, $sessionidList);
    
       writeCheckpoint($checkPoint, $key);
+   } else {
+      $useridList = restoreFromFile($useridFile);
+      $sessionidList = restoreFromFile($sessionidFile);
    }
 
    $key = "inspectors";
    if(!$checkPoint[$key]){
       //Inspector 
       printLog("Downloading inspectors to local");
-      // // $conn = connectToBlackBox();
+      $sessionidList = restoreFromFile($sessionidFile);
       $fileCreated = getIspectors($conn, $sessionidList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
+      unset($sessionidList);
    
       writeCheckpoint($checkPoint, $key);
    }
@@ -70,10 +74,10 @@
    if(!$checkPoint[$key]){
       // //Use sessionidList to populate local invocations table
       printLog("Start populating local invocations with session_id");
-      // // $conn = connectToBlackBox();
+      $sessionidList = restoreFromFile($sessionidFile);
       $fileCreated = getInvocations($conn, $sessionidList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
+      unset($sessionidList);
    
       writeCheckpoint($checkPoint, $key);
    }
@@ -82,10 +86,10 @@
    if(!$checkPoint[$key]){
       // //Use sessionidList to populate local sessions
       printLog("Start populating local sessions with session_id");
-      // // $conn = connectToBlackBox();
+      $sessionidList = restoreFromFile($sessionidFile);
       $fileCreated = getSessions($conn, $sessionidList);
-      // // disconnectServer($conn);
       updateLocal($fileCreated);
+      unset($sessionidList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -113,6 +117,8 @@
       disconnectServer($connLocal);
 
       writeCheckpoint($checkPoint, $key);
+   } else {
+      $projectidList = restoreFromFile($projectidFile);
    }
 
    $key = "users";
@@ -120,8 +126,10 @@
       // //users table
       // //The table can be populated simply by query for every user_id from useridList retrieved earlier
       printLog("Start populating local users");
+      $useridList = restoreFromFile($useridFile);
       $fileCreated = getUsers($conn, $useridList);
       updateLocal($fileCreated);
+      unset($useridList);
 
       writeCheckpoint($checkPoint, $key);
    }
@@ -130,18 +138,22 @@
    if(!$checkPoint[$key]){
       // //Use useridList to populate local projects table
       printLog("Start populating local projects");
+      $useridList = restoreFromFile($useridFile);
       $fileCreated = getProjects($conn, $useridList);
       updateLocal($fileCreated);
+      unset($useridList);
 
       writeCheckpoint($checkPoint, $key);
-   }
+   } 
 
    $key = "packages";
    if(!$checkPoint[$key]){
       // //Use local projectidList from projects table to populate local packages table
       printLog("Start populating local packages");
+      $projectidList = restoreFromFile($projectidFile);
       $fileCreated = getPackages($conn, $projectidList);
       updateLocal($fileCreated);
+      unset($projectidList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -150,8 +162,10 @@
    if(!$checkPoint[$key]){
       // //Populate source_files table using projectiList from local master_events table
       printLog("Start populating local source_files");
+      $projectidList = restoreFromFile($projectidFile);
       $fileCreated = getSourceFiles($conn, $projectidList);
       updateLocal($fileCreated);
+      unset($projectidList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -169,6 +183,8 @@
       disconnectServer($connLocal);
       
       writeCheckpoint($checkPoint, $key);
+   } else {
+      $sourceFileIdList = restoreFromFile($sourceFileidFile);
    }
 
    $key = "breakpoints";
@@ -176,8 +192,10 @@
       // //breakpoints table
       // //Populate local breakpoints using sourceFileIdList
       printLog("Start populating local breakpoints");
+      $sourceFileIdList = restoreFromFile($sourceFileidFile);
       $fileCreated = getBreakpoints($conn, $sourceFileIdList);
       updateLocal($fileCreated);
+      unset($sourceFileIdList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -187,8 +205,10 @@
       // //compile_inputs table
       // //Populate local compile_inputs table with sourceFileIdList
       printLog("Start populating local compile_inputs");
+      $sourceFileIdList = restoreFromFile($sourceFileidFile);
       $fileCreated = getCompileInputs($conn, $sourceFileIdList);
       updateLocal($fileCreated);
+      unset($sourceFileIdList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -198,8 +218,10 @@
       //fixtures table
       //Populate local fixtures table with sourceFileIdList
       printLog("Downloading fixtures to local");
+      $sourceFileIdList = restoreFromFile($sourceFileidFile);
       $fileCreated = getFixtures($conn, $sourceFileIdList);
       updateLocal($fileCreated);
+      unset($sourceFileIdList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -233,6 +255,8 @@
       printLog("Downloading compile_events to local");
       $fileCreated = getCompileEvents($conn, $compileEventIdList);
       updateLocal($fileCreated);
+
+      mysqli_free_result($compileEventIdList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -250,6 +274,8 @@
       printLog("Downloading source_hashes to local");
       $fileCreated = getSourceHashes($conn, $packageList);
       updateLocal($fileCreated);
+
+      unset($packageList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -286,6 +312,9 @@
       printLog("Downloading degbugger_events to local");
       $fileCreated = getDebuggerEvents($conn, $debuggerEventList);
       updateLocal($fileCreated);
+
+      unset($invocationEventList);
+      unset($debuggerEventList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -306,6 +335,8 @@
       $fileCreated = getBenchObjects($conn, $benchPackageList);
       // disconnectServer($conn);
       updateLocal($fileCreated);
+
+      unset($benchPackageList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -325,6 +356,8 @@
       $fileCreated = getBenchObjectsFixture($conn, $benchObjectList);
       // disconnectServer($conn);
       updateLocal($fileCreated);
+
+      unset($benchObjectList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -345,6 +378,8 @@
       $fileCreated = getCodePadEvents($conn, $codePadEventList);
       // disconnectServer($conn);
       updateLocal($fileCreated);
+
+      unset($codePadEventList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -365,6 +400,8 @@
       $fileCreated = getExtensions($conn, $masterEventIdList);
       // disconnectServer($conn);
       updateLocal($fileCreated);
+
+      unset($masterEventIdList);
       
       writeCheckpoint($checkPoint, $key);
    }
@@ -385,6 +422,8 @@
       // disconnectServer($conn);
       updateLocal($fileCreated);
 
+      unset($testidList);
+
       writeCheckpoint($checkPoint, $key);
    }
 
@@ -402,6 +441,8 @@
       $fileCreated = getTestResults($conn, $testResultList);
       // disconnectServer($conn);
       updateLocal($fileCreated);
+
+      unset($testResultList);
       
       writeCheckpoint($checkPoint, $key);
    }
