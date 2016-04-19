@@ -58,9 +58,10 @@
       $conn = new mysqli($servername, $username, $password, $database);
 
       //Check connection
-      if($conn->connect_error){
-         die("FAILEDDDDDDDDD " . $conn->connect_error);
-      }
+      checkConnection($conn);
+      // if($conn->connect_error){
+      //    die("FAILEDDDDDDDDD " . $conn->connect_error);
+      // }
       // echo "Connected to Blackbox!\n<br>**********************\n<br>";
       return $conn;
    }
@@ -120,7 +121,7 @@
       checkConnection($connection);
       $results = $connection->query($query);
       if(!$results){
-         die("Invalid query, please make sure query is correct with all the right parameters" . $endLine);
+         die("Invalid query, please make sure query is correct with all the right parameters: " .$query. $endLine);
          exit();
       } 
       

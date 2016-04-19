@@ -14,17 +14,22 @@
    // //
 
    $endLine = "\n";
+   $db = "capstoneLocal";
 
    function getUserList(){
+      global $db;
+      $conn = connectToLocal($db);
+      $query = "SELECT id FROM users order by id asc";
+      // $useridList = getResult($conn, $query);
+      $useridList = getResultArray($conn, $query, "id");
 
-      $conn = connectToLocal('capstoneLocal');
-      $query = "select id from users order by id asc";
-      $useridList = getResult($conn, $query);
       // $startDate = '2016-01-01';
       // $endDate = '2016-01-25';
 
-      if($useridList->num_rows > 0){
-         echo "Total Users: " . $useridList->num_rows . "<br>";
+      // if($useridList->num_rows > 0){
+      if(count($useridList) > 0){
+         // echo "Total Users: " . $useridList->num_rows . "<br>";
+         echo "Total Users: " . count($useridList) . "<br>";
       ?>
          <form name="form1" method="POST" action="<?php $_SERVER['PHP_SELF'];?>">
          <select name="user_id">
@@ -32,7 +37,8 @@
       <?php
          // echo "<select>";
          foreach($useridList as $user){
-            echo "<option value='" . $user[id] . "'>" . $user[id] . "</option>";
+            // echo "<option value='" . $user[id] . "'>" . $user[id] . "</option>";
+            echo "<option value='" . $user . "'>" . $user . "</option>";
          }
          echo "</select><br>";
       }
@@ -56,18 +62,20 @@
       
       // //Methods for improving correctness: 
       // //Suggest tracking time for invocation to Blackbox staffs
-
-      $conn = connectToLocal('capstoneLocal');
+      global $db;
+      $conn = connectToLocal($db);
       $query = "select id from users order by id asc";
       // $useridList = getResult($conn, $query);
       $useridList = getResultArray($conn, $query, "id");
       $startDate = '2016-01-01';
       $endDate = '2016-01-25';
       $arrData = array("chart" => initChartProperties());
+      $chartType = "mscolumn2d";
       $propertiesToChange = array(
             "caption" => "Number of Invocation Results by Type Per User",
-            "xAxisName"=> "User and Invocation Result Type",
-            "yAxisName"=> "Number of Result",
+            "xAxisName"=> "User ID",
+            "yAxisName"=> "Number of Invocations",
+            "paletteColors" => "#0075c2, #ff0000, #33cc33, #ffff33",
          );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
@@ -92,10 +100,11 @@
             $data = array();
             foreach($useridList as $user){
                // $query = "SELECT result, count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.code like '%Main.main%' and invocations.result='".$type['result']. "' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user['id']." group by invocations.result";
-               $query = "SELECT count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.code like '%Main.main%' and invocations.result='".$type. "' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user." group by invocations.result";
+               $query = "SELECT count(result) as count From invocations JOIN master_events ON master_events.event_id = invocations.id WHERE invocations.result='".$type. "' and master_events.event_type='Invocation' and master_events.created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and master_events.user_id=".$user." group by invocations.result";
                // echo $query . "<br>";
                //returns all invocations of a User
                $invocationEvents = getResult($conn, $query);
+               
                // printResultInTable($invocationEvents);
                //creates array to hold invocation data 
                // $data = array();
@@ -104,14 +113,13 @@
                   // $seriesname = "";
                   while($row = $invocationEvents->fetch_assoc()) {
                      array_push($data, array('value' => $row['count']));
+                     array_push($category, array('label' => $user));
                   }
-               } else {
-                  array_push($data, array('value' => ''));
                }
 
                // if (empty($arrData['categories']))
                //    // array_push($category, array('label' => $user['id']));
-                  array_push($category, array('label' => $user));
+               mysqli_free_result($invocationEvents);
             }
 
             array_push($arrData['dataset'], 
@@ -123,30 +131,24 @@
 
             // if (empty($arrData['categories'])){
                // category label are individual user
-               array_push($arrData['categories'], array('category' => $category));
+            array_push($arrData['categories'], array('category' => $category));
             // $arrData['categories'] = array('category' => $category);
             // }
          }
-
-         // echo "<pre>";
-         // print_r($arrData);
-         // echo "</pre>";
-
-         //encode php data into JSON format
-         // $jsonEncodedData = json_encode($arrData, true);
-         //create chart object with JSON data
-         // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1120, 650, "bottomRight", "json", $jsonEncodedData);
-         // Render the chart
-         // $columnChart->render();
-         createChartObj($arrData, "mscolumn2d")->render();
+         createChartObj($arrData, $chartType)->render();
       }
-      
+      // House keeping
       disconnectServer($conn);
+      unset($category);
+      unset($resultTypes);
+      unset($arrData);
+      unset($useridList);
    }
 
    function invokeExceptions(){
    // //Not needed, as invocation per user does it
-      $conn = connectToLocal('capstoneLocal');
+      global $db;
+      $conn = connectToLocal($db);
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
       $startDate = '2016-01-01';
@@ -204,29 +206,44 @@
       // //Recommend adding an event when an invoked function ends. 
       // //We could also assume the time it took from one game execution to the next execution as the time it took students to fix or play the game.
       global $endLine;
-
-      $conn = connectToLocal('capstoneLocal');
+      global $db;
+      $conn = connectToLocal($db);
       $query = "select id from users order by id asc";
       // $useridList = getResult($conn, $query);
       $useridList = getResultArray($conn, $query, "id");
-      $startDate = '2016-01-01';
-      $endDate = '2016-01-25';
+      // $startDate = '2016-01-01';
+      // $endDate = '2016-01-25';
+
+      // //Get start and end date for the data to download
+      $dateRange = getStartEndDate();
+      $startDate = $dateRange[0];
+      $endDate = $dateRange[1];
+
+      // print_r($dateRange);
 
       $arrData = array("chart" => initChartProperties());
+      $chartType = "mscolumn2d";
+
       $propertiesToChange = array(
-            "caption" => "Top 10 Compiler Errors",
-            "xAxisName"=> "Error Type",
-            "yAxisName"=> "Number of Errors",
+            "caption" => "Number of Game Invocations",
+            "xAxisName"=> "User ID",
+            "yAxisName"=> "Number of invocations",
+            "paletteColors" => "#0075c2, #ff0000",
       );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
+      $arrData['dataset'] = array();
+      $arrData['categories'] = array();
+
       // if($useridList->num_rows > 0){
       if(count($useridList) > 0){
-         // echo "Total Users: " . count($useridList) . $endLine;
+         echo "Total Users: " . count($useridList) . $endLine;
          $category = array();
+         $dataMain = array();
+         $dataInvo = array();
 
          foreach($useridList as $user){
-
+            // array_push($category, array('label' => $user));
             // $numberOfMain = array();
             // echo "user_id: ".$user[id]."<br>";
             //using user_id, query for all event_id events where event_type = Invocations between the date 2016-01-01 to 2016-01-25
@@ -239,12 +256,13 @@
 
             // if($invocationEvents->num_rows > 0){
             if(count($invocationEvents) > 0){
-               if (empty($arrData['categories']))
+               // if (empty($arrData['categories']))
                   // array_push($category, array('label' => $user['id']));
-                  array_push($category, array('label' => $user));
+               array_push($category, array('label' => $user));
+               array_push($dataInvo, array('value' => count($invocationEvents)));
                // echo "user_id: ".$user[id]."<br>";
                // echo "user_id: ".$user.$endLine;
-               // echo "Number of Invocations: " . $invocationEvents->num_rows . " bewteen " . $startDate . "until " . $endDate. "<br>";
+               // echo "Number of Invocations: " . count($invocationEvents) . $endLine;
                // echo "Number of Invocations: " . $invocationEvents->num_rows . $endLine;
                // echo " bewteen " . $startDate . "until " . $endDate. $endLine;
                
@@ -257,16 +275,30 @@
 
                   if($results->num_rows > 0){
                      $numberOfMainInvoked+=$results->num_rows;
+                     // $numberOfMainInvoked++;
                   }
+                  mysqli_free_result($results);
                }
                // echo "Number of Main.main({}) invoked: " . $numberOfMainInvoked . "<br><br>";
-               // $numpberOfMainInvoked = 0;            
+               array_push($dataMain, array('value' => $numberOfMainInvoked));
+               // $numberOfMainInvoked = 0;            
                // printResultInTable($invocationEvents);
             }
-
-            unset($invocationEvents);
          }
+
+         array_push($arrData['categories'], array('category' => $category));
+         array_push($arrData['dataset'], array('seriesname'=>'Total Invocations', 'data' => $dataInvo));
+         array_push($arrData['dataset'], array('seriesname'=>'Main.main({})', 'data' => $dataMain));
+
+         createChartObj($arrData, $chartType)->render();
       }
+      // House keeping
+      disconnectServer($conn);
+      unset($invocationEvents);
+      unset($dataInvo);
+      unset($dataMain);
+      unset($category);
+      unset($arrData);
    }
 
    function numberOfCompilePerTodo(){
@@ -289,8 +321,8 @@
       // //Methods for improving correctness: 
       // //Recommend adding an event when an invoked function ends. 
       // //We could also assume the time it took from one game execution to the next execution as the time it took students to fix or play the game.
-
-      $conn = connectToLocal('capstoneLocal');
+      global $db;
+      $conn = connectToLocal($db);
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
       $startDate = '2016-01-01';
@@ -361,7 +393,7 @@
       // //Recommend adding an event when an invoked function ends. 
       // //We could also assume the time it took from one game execution to the next execution as the time it took students to fix or play the game.
 
-      $conn = connectToLocal('capstoneLocal');
+      $conn = connectToLocal($db);
       $query = "select id from users order by id";
       $useridList = getResult($conn, $query);
       $startDate = '2016-01-12';
@@ -436,11 +468,9 @@
 
       echo "<div>";
       echo "<form action='" . $_SERVER['PHP_SELF'] . "' method='POST'>";
-      // echo "<select name='type'>";
       echo "<input type='radio' name='radio' value='column2D'>Column 2D";
       echo "<input type='radio' name='radio' value='bar2D'>Bar 2D";
       echo "<input type='radio' name='radio' value='line'>Line 2D";
-      // echo "</select>";
       echo "<input type='submit' name='submit' value='Get Selected Values' />";
       echo "</form>";
       echo "</div>";
@@ -454,44 +484,25 @@
          }
       }
 
-      // $date = new DateTime('2016-01-01', new DateTimeZone('America/New_York'));
-      // echo $date->format('Y-m-d') . "<br>";
-      // $date->modify('+1 day');
-      // echo $date->format('Y-m-d');
-
-      // if($date->format('Y-m-d') == '2016-01-01')
-      //    echo "boo yah";
-      $conn = connectToLocal('capstoneLocal');
+      global $db;
+      $conn = connectToLocal($db);
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
       $startDate = new DateTime('2016-01-01', new DateTimeZone('America/Los_Angeles'));
       $nextDay = new DateTime('2016-01-02', new DateTimeZone('America/Los_Angeles'));
       $endDate = new DateTime('2016-01-25', new DateTimeZone('America/Los_Angeles'));;
 
-      $arrData = array(
-         "chart" => array(
+      $arrData = array("chart" => initChartProperties());
+
+      $propertiesToChange = array(
             "caption" => "Occurance of Sessions",
-            "paletteColors" => "#0075c2",
-            "bgColor" => "#ffffff",
-            "borderAlpha"=> "20",
-            "canvasBorderAlpha"=> "0",
-            "usePlotGradientColor"=> "0",
-            "plotBorderAlpha"=> "10",
-            "plotHighlightEffect"=> "fadeout",
-            "showXAxisLine"=> "1",
-            "showlegend" => "0",
-            "labelDisplay" => "rotate",
-            "showvalues" => "1",
-            "showyaxisvalues" => "1",
-            "showxaxisvalues" => "0",
             "xAxisName"=> "Date",
             "yAxisName"=> "Number of Session",
-            "xAxisLineColor" => "#999999",
-            "divlineColor" => "#999999",
-            "divLineIsDashed" => "1",
-            "showAlternateHGridColor" => "0"
-         )
+            "showXAxisLine"=> "1",
+            "labelDisplay" => "rotate",
       );
+
+      modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
       $arrData['data'] = array();
 
@@ -513,12 +524,8 @@
          $nextDay->modify('+1 day');
       }
 
-      // $jsonEncodedData = json_decode($arrData, true);
-      $jsonEncodedData = json_encode($arrData);
-      // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
-      $columnChart = new FusionCharts($chartType, "myFirstChart" , 1120, 650, "bottomRight", "json", $jsonEncodedData);
       // Render the chart
-      $columnChart->render();
+      createChartObj($arrData, $chartType)->render();
 
       disconnectServer($conn);
    }
@@ -527,7 +534,8 @@
       //Compute the number of times a TODO file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
       //Total time per file can not be identified because an entry in the master_events shows when the file was compiled, but doesn't track 
       //anything which identifies as end of a file edit (the only event says the file is being work on)
-      $conn = connectToLocal('capstoneLocal');
+      global $db;
+      $conn = connectToLocal($db);
       $query = "select id from users order by id asc";
       $useridList = getResult($conn, $query);
       $startDate = '2016-01-01';
@@ -594,8 +602,8 @@
       
       // //Methods for improving correctness: 
       // //
-
-      $conn = connectToLocal('capstoneLocalForQA');
+      global $db;
+      $conn = connectToLocal($db);
       //compile_error from invocations when compiling the generated code (e.g. be- cause the user entered invalid parameters)
       //$query = "select count(compile_error), compile_error from invocations where result = 'compile_error' group by compile_error order by count(compile_error) desc limit 10";
       
@@ -611,6 +619,7 @@
       // echo "</table>";
       if($result){
          $arrData = array("chart" => initChartProperties());
+         $chartType = "column2D";
          $propertiesToChange = array(
                "caption" => "Top 10 Compiler Errors",
                "xAxisName"=> "Error Type",
@@ -634,13 +643,14 @@
          }
 
          // $jsonEncodedData = json_decode($arrData, true);
-         $jsonEncodedData = json_encode($arrData);
+         // $jsonEncodedData = json_encode($arrData);
          // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
-         $columnChart = new FusionCharts("column2D", "myFirstChart" , 1000, 650, "bottomRight", "json", $jsonEncodedData);
+         // $columnChart = new FusionCharts("column2D", "myFirstChart" , 1000, 650, "bottomRight", "json", $jsonEncodedData);
          // Render the chart
-         $columnChart->render();
-       
+         // $columnChart->render();
+         createChartObj($arrData, $chartType)->render();
          disconnectServer($conn);
+         unset($arrData);
       }
    }
 
@@ -663,11 +673,28 @@
       // //Represent the data using per student's session time per day instead of summation of all students
 
       //Find all events in master_events when BlueJ closes, name='bluej_finish'
-      $conn = connectToLocal('capstoneLocalForQA');
+      global $db;
+      $conn = connectToLocal($db);
+      $numOfEvent = 20;
+
+      // //Get start and end date for the data to download
+      $dateRange = getStartEndDate();
+      $startDate = $dateRange[0];
+      $endDate = $dateRange[1];
+
+      $query = "SELECT distinct event_type from master_events where event_type!='' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
+      $eventTypes = getResultArray($conn, $query, 'event_type');
+
+      $typeCount = array();
+      $category = array();
+      foreach($eventTypes as $type){
+         array_push($category, array('label' => $type));
+         $typeCount[$type] = 0;
+      }
 
       //a bluej_start to a bluej_finish is a session
       //we can find the end sequence num for a particular session
-      $query = "select session_id, sequence_num from master_events where name = 'bluej_finish' order by id desc";
+      $query = "SELECT session_id, sequence_num from master_events where name = 'bluej_finish' and created_at BETWEEN '".$startDate."' AND '".$endDate."' order by id desc";
       $bluejCloseEvents = getResult($conn, $query);
 
       // echo "<table border=1>";
@@ -675,34 +702,67 @@
       // echo "</table>";
 
       if($bluejCloseEvents->num_rows > 0){
+         $arrData = array("chart" => initChartProperties());
+         $chartType = "column2d";
+
+         $propertiesToChange = array(
+               "caption" => "Last few events before closing BlueJ",
+               "xAxisName"=> "Event types",
+               "yAxisName"=> "Number of events",
+               "paletteColors" => "#0075c2, #ff0000",
+         );
+
+         modifyMultiProperties($arrData["chart"], $propertiesToChange);
+
          foreach($bluejCloseEvents as $bluejClose){
-            echo "session_id: ". $bluejClose['session_id'] . "</br> last sequence_num: ".$bluejClose['sequence_num']."<br>";
-            $numOfEvent = 10;
+            // echo "session_id: ". $bluejClose['session_id'] . "</br> last sequence_num: ".$bluejClose['sequence_num']."<br>";
+            
+            //last event is the one before the LAST session, bluej_close
             $max = $bluejClose['sequence_num'] - 1;
 
-            if($bluejClose['sequence_num'] < 5)
+            // sets min to 0 if sequence_num is less than the desire number of event to see
+            if($bluejClose['sequence_num'] < $numOfEvent)
                $min = 0;
-            else 
-            { 
+            else  
                $min = $bluejClose['sequence_num'] - $numOfEvent;
-               if($min < 0)
-                  $min = 0;
+
+            $query = "SELECT event_type From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND event_type !='' AND sequence_num between " . $min . " AND " . $max;
+            // echo $query . "<br>";
+            $results = getResultArray($conn, $query, "event_type");
+            
+            if(array_key_exists($results[0], $typeCount)){ 
+               $typeCount[$results[0]]++;
             }
-
-            $query = "SELECT event_type From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND sequence_num between " . $min . " AND " . $max;
-            echo $query . "<br>";
-            $results = getResult($conn, $query);
-
-            echo "<table border=1>";
-            $fields = getFieldNames($results);
-            printArray($fields, yes);
-            printQueryResults($results);
-            echo "</table>";
-
          }
+         // array_push($arrData['categories'], array('category' => $category));
+         // array_push($arrData['dataset'], array('seriesname'=>'Total Invocations', 'data' => $dataInvo));
+         // array_push($arrData['dataset'], array('seriesname'=>'Main.main({})', 'data' => $dataMain));
+         // $data = array();
+         // foreach($typeCount as $type=>$value){
+         //    array_push($data, array('value' => $value));
+         //    array_push($arrData['dataset'], array('seriesname'=>$type, 'data' => $data));
+         // }
+
+         $arrData["data"] = array();
+         foreach($typeCount as $type=>$value){
+            array_push($arrData["data"], 
+               array(
+                  "label" => $type,
+                  "value" => $value
+               )
+            );
+         }
+         
+         createChartObj($arrData, $chartType)->render();
       }
 
       disconnectServer($conn);
+      unset($results);
+      unset($eventTypes);
+      unset($typeCount);
+      unset($category);
+      unset($arrData);
+      mysqli_free_result($bluejCloseEvents);
    }
 
    function participationRate(){
@@ -778,11 +838,13 @@
       //////////////////////////////////////////////
       // //FusionChart
       $query = "SELECT user_id, count(user_id) as count from sessions group by user_id";
-      $conn = connectToLocal("capstoneLocal");
+      global $db;
+      $conn = connectToLocal($db);
       $result = getResult($conn, $query);
 
       if($result){
          $arrData = array("chart" => initChartProperties());
+         $chartType = "column2D";
          $propertiesToChange = array(
             "caption" => "Total Sessions Per User ID",
             "xAxisName"=> "User IDs",
@@ -804,19 +866,8 @@
                )
             );
          }
-         //set the response content type as JSON
-         // header('Content-type: application/json');
-         // $jsonEncodedData = json_decode($arrData, true);
-         $jsonEncodedData = json_encode($arrData);
-         // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "topRight", "json", $arrData);
-         $columnChart = new FusionCharts("column2D", "myFirstChart" , 1000, 650, "bottomRight", "json", $jsonEncodedData);
-         // Render the chart
-         $columnChart->render();
-         // $jsonDecode = json_decode($arrData, true);
-         // echo "<pre>";
-         // print_r($arrData);
-         // echo "</pre>";
-         // Close the database connection
+
+         createChartObj($arrData, $chartType)->render();
          disconnectServer($conn);
       }
       /////////////////////////////////////////////
@@ -824,17 +875,22 @@
 
    function durationOfSpaceSmasherAPI(){
       // //Question:
-      // //
+      // //Do any students go into the API and modify it? 
+      // //If so, how long do they spend on it?
+
       // //Answer: 
       // //
+
       // //Implication of answer:
       // //
+
       // //Answer's correctness: 
       // //
+
       // //Methods for improving correctness: 
       // //
-
-      $conn = connectToLocal('capstoneLocalForQA');
+      global $db;
+      $conn = connectToLocal($db);
 
       //query for all SpaceSmasherAPI from Packge
       $query = "select id, project_id from packages where name = 'SpaceSmasher_FunctionalAPI'";
@@ -940,7 +996,8 @@
    }
 
    function getByOtherID($query){
-      $conn = connectToLocal("capstoneLocal");
+      global $db;
+      $conn = connectToLocal($db);
       $useridList = getResult($conn, $query);
       disconnectServer($conn);
       return $useridList;

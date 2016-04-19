@@ -5,10 +5,12 @@
 <style type="text/css">
    html, body { height: 100%; padding: 0; margin: 0; }
    div {overflow: scroll;}
-   #topLeft { background: #DDD; width:20%; height:20%; float:left;}
-   #topRight { background: #AAA; width:80%; height:20%; float:right;}
-   #bottomLeft { background: #777; width:20%; height:80%; float:left;}
-   #bottomRight { background: white; width:80%; height:80%; float:right;}
+   #left {width:20%; height:auto;}
+   #right {width:80%; height:auto;}
+   #topLeft { background: green; height:20%;}
+   #topRight { background: blue; height:20%;}
+   #bottomLeft { background: red; height:80%;}
+   #bottomRight { background: black; height:80%;}
 </style>   
 <!-- 
 <script src="charts4php/lib/js/jquery.min.js"></script>
@@ -68,120 +70,120 @@
    // }
 
 ?>
+<div id="left">
+   <div id="topLeft">
+      <?php
+         // include 'CoreFunctions.php';
+         // listOfUserId();
+         //Returns all user_id from local database with current data
+         getUserList();
 
-<div id="topLeft">
-   <?php
-      // include 'CoreFunctions.php';
-      // listOfUserId();
-      //Returns all user_id from local database with current data
-      getUserList();
+         function listOfUserId(){
+            $conn = connectToLocal('capstoneLocal');
+            $query = "select id from users order by id asc";
+            $useridList = getResult($conn, $query);
+            // $startDate = '2016-01-01';
+            // $endDate = '2016-01-25';
 
-      function listOfUserId(){
-         $conn = connectToLocal('capstoneLocal');
-         $query = "select id from users order by id asc";
-         $useridList = getResult($conn, $query);
-         // $startDate = '2016-01-01';
-         // $endDate = '2016-01-25';
-
-         if($useridList->num_rows > 0){
-            echo "Total Users: " . $useridList->num_rows . "<br>";?>
-            <form name="form1" method="POST" action="<?php $_SERVER['PHP_SELF'];?>">
-            <select name="user_id">
-            <option value=""></option> <!--Can have or not, to be tested-->
-            <?php
-            foreach($useridList as $user){
-               echo "<option value='" . $user[id] . "'>" . $user[id] . "</option>";
+            if($useridList->num_rows > 0){
+               echo "Total Users: " . $useridList->num_rows . "<br>";?>
+               <form name="form1" method="POST" action="<?php $_SERVER['PHP_SELF'];?>">
+               <select name="user_id">
+               <option value=""></option> <!--Can have or not, to be tested-->
+               <?php
+               foreach($useridList as $user){
+                  echo "<option value='" . $user[id] . "'>" . $user[id] . "</option>";
+               }
+               echo "</select><br>";   
             }
-            echo "</select><br>";   
          }
-      }
-   ?>
-   <input type="submit" name="submit2" value="Select User ID">
+      ?>
+      <input type="submit" name="submit2" value="Select User ID">
 
-   <?php   
-      if(isset($_POST['submit2'])){
-         $name = $_POST['user_id'];
-         echo "<br>Selected User ID: " . $name . "<br>";
-      }
-   ?>
-   <a href='guiPage.php?graphTotalSessionsPerUser=true'>Total Sessions Per User</a></br>
-   <a href='guiPage.php?invocationsPerUser=true'>Total Invocations Per User</a></br>
-   <a href='guiPage.php?numberOfCompilePerTodo=true'>Number of Compiles Per Todo File</a></br>
-   <a href='guiPage.php?numberOfCompilePerFile=true'>Number of Compiles Per File</a></br>
-   <a href='guiPage.php?topTenComileErrors=true'>Top Ten Compile Errors</a></br>
-   <!-- <a href='guiPage.php?durationBetweenTodo=true'>Duration Between Todos</a></br> -->
-   <a href='guiPage.php?occuranceOfSessions=true'>Occurance of Sessions</a></br>
-   <a href='guiPage.php?numberOfGameExecution=true'>Number of Game Execution</a></br>
-   <a href='guiPage.php?participationRate=true'>Participation Rate</a></br>
-   <a href='guiPage.php?lastFewEvents=true'>Last few events before BlueJ closes</a></br>
-   <a href='guiPage.php?durationOfSpaceSmasherAPI=true'>Duration on SpaceSmasherAPI</a></br>
-   
+      <?php   
+         if(isset($_POST['submit2'])){
+            $name = $_POST['user_id'];
+            echo "<br>Selected User ID: " . $name . "<br>";
+         }
+      ?>
+      <a href='guiPage.php?graphTotalSessionsPerUser=true'>Total Sessions Per User</a></br>
+      <a href='guiPage.php?invocationsPerUser=true'>Total Invocations Per User</a></br>
+      <a href='guiPage.php?numberOfCompilePerTodo=true'>Number of Compiles Per Todo File</a></br>
+      <a href='guiPage.php?numberOfCompilePerFile=true'>Number of Compiles Per File</a></br>
+      <a href='guiPage.php?topTenComileErrors=true'>Top Ten Compile Errors</a></br>
+      <!-- <a href='guiPage.php?durationBetweenTodo=true'>Duration Between Todos</a></br> -->
+      <a href='guiPage.php?occuranceOfSessions=true'>Occurance of Sessions</a></br>
+      <a href='guiPage.php?numberOfGameExecution=true'>Number of Game Execution</a></br>
+      <a href='guiPage.php?participationRate=true'>Participation Rate</a></br>
+      <a href='guiPage.php?lastFewEvents=true'>Last few events before BlueJ closes</a></br>
+      <a href='guiPage.php?durationOfSpaceSmasherAPI=true'>Duration on SpaceSmasherAPI</a></br>
+      
+   </div>
+   <div id="bottomLeft">
+      <?php
+         // numberOfCompilePerFile();
+      ?>
+   </div>
 </div>
 
-<div id="topRight">
-   <?php
+<div id="right">
+   <div id="topRight">
+      <?php
 
-   ?>
-</div>
+      ?>
+   </div>
+   <div id="bottomRight">
+      <?php
+         // if(isset($_GET['graph'])){
+         //    graphTotalSessionsPerUser();
+         // }
+         // echo "Get user id by session_id<br>";
+         // getUserIdByType("session_id",10307663);
+         // echo "Get user id by master_event_id<br>";
+         // getUserIdByType("master_event_id",720551340);
+         // echo "Get user id by package_id<br>";
+         // getUserIdByType("package_id",4511332);
+         // echo "Get user id by project_id<br>";
+         // getUserIdByType("project_id",4236079);
+         // echo "Get user id by source_file_id<br>";
+         // getUserIdByType("source_file_id",28209599);
+         // numberOfCompilePerTodo();
 
-<div id="bottomLeft">
-   <?php
-      // if(isset($_GET['graph'])){
-      //    graphTotalSessionsPerUser();
-      // }
-      // echo "Get user id by session_id<br>";
-      // getUserIdByType("session_id",10307663);
-      // echo "Get user id by master_event_id<br>";
-      // getUserIdByType("master_event_id",720551340);
-      // echo "Get user id by package_id<br>";
-      // getUserIdByType("package_id",4511332);
-      // echo "Get user id by project_id<br>";
-      // getUserIdByType("project_id",4236079);
-      // echo "Get user id by source_file_id<br>";
-      // getUserIdByType("source_file_id",28209599);
-      // numberOfCompilePerTodo();
-
-      if(isset($_GET['graphTotalSessionsPerUser'])){
-         graphTotalSessionsPerUser();
-      }
-      if(isset($_GET['numberOfCompilePerFile'])){
-         numberOfCompilePerFile();
-      }
-      if(isset($_GET['numberOfCompilePerTodo'])){
-         numberOfCompilePerTodo();
-      }
-      if(isset($_GET['invocationsPerUser'])){
-         invocationsPerUser();
-      }
-      if(isset($_GET['topTenComileErrors'])){
-         topTenComileErrors();
-      }
-      if(isset($_GET['durationBetweenTodo'])){
-         durationBetweenTodo();
-      }
-      if(isset($_GET['occuranceOfSessions'])){
-         occuranceOfSessions();
-      }
-      if(isset($_GET['numberOfGameExecution'])){
-         numberOfGameExecution();
-      }
-      if(isset($_GET['participationRate'])){
-         participationRate();
-      }
-      if(isset($_GET['lastFewEvents'])){
-         lastFewEvents();
-      }
-      if(isset($_GET['durationOfSpaceSmasherAPI'])){
-         durationOfSpaceSmasherAPI();
-      }
-
-   ?>
-</div>
-
-<div id="bottomRight">
-   <?php
-      // numberOfCompilePerFile();
-   ?>
+         if(isset($_GET['graphTotalSessionsPerUser'])){
+            graphTotalSessionsPerUser();
+         }
+         if(isset($_GET['numberOfCompilePerFile'])){
+            numberOfCompilePerFile();
+         }
+         if(isset($_GET['numberOfCompilePerTodo'])){
+            numberOfCompilePerTodo();
+         }
+         if(isset($_GET['invocationsPerUser'])){
+            invocationsPerUser();
+         }
+         if(isset($_GET['topTenComileErrors'])){
+            topTenComileErrors();
+         }
+         if(isset($_GET['durationBetweenTodo'])){
+            durationBetweenTodo();
+         }
+         if(isset($_GET['occuranceOfSessions'])){
+            occuranceOfSessions();
+         }
+         if(isset($_GET['numberOfGameExecution'])){
+            numberOfGameExecution();
+         }
+         if(isset($_GET['participationRate'])){
+            participationRate();
+         }
+         if(isset($_GET['lastFewEvents'])){
+            lastFewEvents();
+         }
+         if(isset($_GET['durationOfSpaceSmasherAPI'])){
+            durationOfSpaceSmasherAPI();
+         }
+      ?>
+   </div>
 </div>
 
 </body>

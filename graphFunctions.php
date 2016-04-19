@@ -22,7 +22,7 @@
          "xAxisName"=> "X Axis Name",
          "yAxisName"=> "Y Axis Name",
          "showAlternateHGridColor" => "1",
-         "paletteColors" => "#0075c2, #ff0000, #33cc33",
+         "paletteColors" => "#0075c2",
          "bgColor" => "#ffffff",
          "borderAlpha"=> "20",
          "canvasBorderAlpha"=> "0",
