@@ -5,12 +5,12 @@
 <style type="text/css">
    html, body { height: 100%; padding: 0; margin: 0; }
    div {overflow: scroll;}
-   #left {width:20%; height:auto;}
-   #right {width:80%; height:auto;}
-   #topLeft { background: green; height:20%;}
-   #topRight { background: blue; height:20%;}
-   #bottomLeft { background: red; height:80%;}
-   #bottomRight { background: black; height:80%;}
+   #left {width:20%; height:100%;float:left;background:#C0C0C0;}
+   #right {width:80%; height:100%;float:auto}
+   #topLeft { background:#888888; height:40%;}
+   #topRight { background:#C0C0C0; height:20%;}
+   #bottomLeft {height:60%}
+   #bottomRight { background: white; height:auto;}
 </style>   
 <!-- 
 <script src="charts4php/lib/js/jquery.min.js"></script>
@@ -122,33 +122,6 @@
    <div id="bottomLeft">
       <?php
          // numberOfCompilePerFile();
-      ?>
-   </div>
-</div>
-
-<div id="right">
-   <div id="topRight">
-      <?php
-
-      ?>
-   </div>
-   <div id="bottomRight">
-      <?php
-         // if(isset($_GET['graph'])){
-         //    graphTotalSessionsPerUser();
-         // }
-         // echo "Get user id by session_id<br>";
-         // getUserIdByType("session_id",10307663);
-         // echo "Get user id by master_event_id<br>";
-         // getUserIdByType("master_event_id",720551340);
-         // echo "Get user id by package_id<br>";
-         // getUserIdByType("package_id",4511332);
-         // echo "Get user id by project_id<br>";
-         // getUserIdByType("project_id",4236079);
-         // echo "Get user id by source_file_id<br>";
-         // getUserIdByType("source_file_id",28209599);
-         // numberOfCompilePerTodo();
-
          if(isset($_GET['graphTotalSessionsPerUser'])){
             graphTotalSessionsPerUser();
          }
@@ -182,6 +155,32 @@
          if(isset($_GET['durationOfSpaceSmasherAPI'])){
             durationOfSpaceSmasherAPI();
          }
+      ?>
+   </div>
+</div>
+
+<div id="right">
+   <div id="topRight">
+      <?php
+
+      ?>
+   </div>
+   <div id="bottomRight">
+      <?php
+         // if(isset($_GET['graph'])){
+         //    graphTotalSessionsPerUser();
+         // }
+         // echo "Get user id by session_id<br>";
+         // getUserIdByType("session_id",10307663);
+         // echo "Get user id by master_event_id<br>";
+         // getUserIdByType("master_event_id",720551340);
+         // echo "Get user id by package_id<br>";
+         // getUserIdByType("package_id",4511332);
+         // echo "Get user id by project_id<br>";
+         // getUserIdByType("project_id",4236079);
+         // echo "Get user id by source_file_id<br>";
+         // getUserIdByType("source_file_id",28209599);
+         // numberOfCompilePerTodo();
       ?>
    </div>
 </div>
