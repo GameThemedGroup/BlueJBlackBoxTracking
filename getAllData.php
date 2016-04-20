@@ -388,6 +388,11 @@
    if(!$checkPoint[$key]){
       //Extensions
       //select all master_event_id from local master_events
+      //At this point this is the table that takes the longest time to download
+      //Have encountered exceeding PHP preset memory while retrieving data
+      //Therefore, we could leave this download out since it only contains extensions used in a project
+      //Which in our case there will be no extensions
+      
       printLog("Getting id(s) from master_events");
       $connLocal = connectToLocal("capstoneLocal");
       $query = "SELECT distinct id from master_events";

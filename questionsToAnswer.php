@@ -44,6 +44,48 @@
       }
    }
 
+   function invokeExceptions(){
+   // //Not needed, as invocation per user does it
+      global $db;
+      $conn = connectToLocal($db);
+      $query = "select id from users order by id asc";
+      $useridList = getResult($conn, $query);
+      $startDate = '2016-01-01';
+      $endDate = '2016-01-25';
+
+      if($useridList->num_rows > 0){
+         echo "Total Users: " . $useridList->num_rows . "<br>";
+         foreach($useridList as $user){
+            // echo "user_id: ".$user[id]."<br>";
+            //using user_id, query for all event_id events where event_type = Invocations between the date 2016-01-01 to 2016-01-25
+            //which is the time up till the first assignment due date
+            $query = "SELECT event_id From master_events WHERE event_type='Invocation' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user[id];
+            // echo $query . "<br>";
+            $invocationEvents = getResult($conn, $query);
+
+            if($invocationEvents->num_rows > 0){
+               echo "user_id: ".$user[id]."<br>";
+               $numberOfInvoked = 0; 
+               foreach($invocationEvents as $event){
+                  $query = "SELECT result, exception_class, exception_message From invocations where code like '%Main.main({ })%' and result='exception' and id=" . $event[event_id];
+                  // echo $query ."<br>";
+                  $results = getResult($conn, $query);
+
+                  if($results->num_rows > 0){
+                     $numberOfInvoked+=$results->num_rows;                  
+                     printResultInTable($results);
+                  }
+               }
+               if($numberOfInvoked > 0){
+                  // echo "user_id: ".$user[id]."<br>";
+                  echo "Number of Invocations with exceptions: " . $numberOfInvoked . " bewteen " . $startDate . "until " . $endDate. "<br><br>";
+               }
+               $numberOfInvoked = 0;
+            }
+         }
+      }
+   }
+
    function invocationsPerUser(){
       // //Question (Why): 
       // //Total time student spent on different files. Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base
@@ -143,48 +185,6 @@
       unset($resultTypes);
       unset($arrData);
       unset($useridList);
-   }
-
-   function invokeExceptions(){
-   // //Not needed, as invocation per user does it
-      global $db;
-      $conn = connectToLocal($db);
-      $query = "select id from users order by id asc";
-      $useridList = getResult($conn, $query);
-      $startDate = '2016-01-01';
-      $endDate = '2016-01-25';
-
-      if($useridList->num_rows > 0){
-         echo "Total Users: " . $useridList->num_rows . "<br>";
-         foreach($useridList as $user){
-            // echo "user_id: ".$user[id]."<br>";
-            //using user_id, query for all event_id events where event_type = Invocations between the date 2016-01-01 to 2016-01-25
-            //which is the time up till the first assignment due date
-            $query = "SELECT event_id From master_events WHERE event_type='Invocation' and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' and user_id=".$user[id];
-            // echo $query . "<br>";
-            $invocationEvents = getResult($conn, $query);
-
-            if($invocationEvents->num_rows > 0){
-               echo "user_id: ".$user[id]."<br>";
-               $numberOfInvoked = 0; 
-               foreach($invocationEvents as $event){
-                  $query = "SELECT result, exception_class, exception_message From invocations where code like '%Main.main({ })%' and result='exception' and id=" . $event[event_id];
-                  // echo $query ."<br>";
-                  $results = getResult($conn, $query);
-
-                  if($results->num_rows > 0){
-                     $numberOfInvoked+=$results->num_rows;                  
-                     printResultInTable($results);
-                  }
-               }
-               if($numberOfInvoked > 0){
-                  // echo "user_id: ".$user[id]."<br>";
-                  echo "Number of Invocations with exceptions: " . $numberOfInvoked . " bewteen " . $startDate . "until " . $endDate. "<br><br>";
-               }
-               $numberOfInvoked = 0;
-            }
-         }
-      }
    }
 
    function numberOfGameExecution(){
@@ -678,9 +678,9 @@
       $numOfEvent = 20;
 
       // //Get start and end date for the data to download
-      $dateRange = getStartEndDate();
-      $startDate = $dateRange[0];
-      $endDate = $dateRange[1];
+      // $dateRange = getStartEndDate();
+      // $startDate = $dateRange[0];
+      // $endDate = $dateRange[1];
 
       $query = "SELECT distinct event_type from master_events where event_type!='' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
       $eventTypes = getResultArray($conn, $query, 'event_type');
@@ -752,7 +752,7 @@
                )
             );
          }
-         
+
          createChartObj($arrData, $chartType)->render();
       }
 

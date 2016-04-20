@@ -42,8 +42,14 @@
    }
 
    function createChartObj($arrData, $chartType){
-      $chartObj = new FusionCharts($chartType, "myFirstChart", 1120, 650, "bottomRight", "json", json_encode($arrData, true));
-      return $chartObj;
+      //$chartObj = new FusionCharts($chartType, "myFirstChart", 1120, 650, "bottomRight", "json", json_encode($arrData, true));
+      $result = array(
+         "type" => $chartType,
+         "data" => $arrData
+      );
+
+      return json_encode($result, true);
+      // return $chartObj;
    }
 
 ?>

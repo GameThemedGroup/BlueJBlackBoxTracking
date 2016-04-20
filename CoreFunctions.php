@@ -1,10 +1,10 @@
-<!-- <script src="sorttable.js"></script> -->
-
 <?php
    date_default_timezone_set("America/Los_Angeles");
    $endLine = "\n";
    $logLevel = 1;
    $dbToUpdate = 'capstoneLocal';
+   //TODO replace $db with $dbToUpdate
+   $db = 'capstoneLocal';
 
    function getStartEndDate(){
       global $argv;
