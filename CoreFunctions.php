@@ -1,28 +1,63 @@
 <?php
    date_default_timezone_set("America/Los_Angeles");
    $endLine = "\n";
-   $logLevel = 1;
+   $logLevel = 0;
    $dbToUpdate = 'capstoneLocal';
    //TODO replace $db with $dbToUpdate
    $db = 'capstoneLocal';
+
+   function isRealDate($date){
+      if(false === strtotime($date)){
+         return false;
+      } else {
+         list($year, $month, $day) = explode('-',$date);
+         if(false === checkdate($month, $day, $year)){
+            return false;
+         }
+      }
+      return true;
+   }
+
+   function checkInputDate($startDate, $endDate){
+      if(isRealDate($startDate) && isRealDate($endDate)){
+         $dateArray = array($startDate, $endDate);
+         return $dateArray;
+      } else {
+         printLog("Invalid date entered, please enter date in the format year-month-day (e.g. 2016-01-01)");
+         echo '{"error":"Invalid Date"}';
+         exit();
+      }
+   }
 
    function getStartEndDate(){
       global $argv;
       if(count($argv) == 3){
          $startDate = $argv[1];
          $endDate = $argv[2];
-         $dateArray = array($startDate, $endDate);
-         return $dateArray;
+         return checkInputDate($startDate, $endDate);
+         // if(isRealDate($startDate) && isRealDate($endDate)){
+         //    $dateArray = array($startDate, $endDate);
+         //    return $dateArray;
+         // } else {
+         //    printLog("Invalid date entered, please enter date in the format year-month-day (e.g. 2016-01-01)");
+         // }
          // echo $startDate . "\n" . $endDate . "\n";
       } else if(isset($_GET['startDate']) && isset($_GET['endDate'])){
          $startDate = $_GET['startDate'];
          $endDate = $_GET['endDate'];
-         $dateArray = array($startDate, $endDate);
-         return $dateArray;
+         return checkInputDate($startDate, $endDate);
+         // if(isRealDate($startDate) && isRealDate($endDate)){
+         //    $dateArray = array($startDate, $endDate);
+         //    return $dateArray;
+         // } else {
+         //    printLog("Invalid date entered, please enter date in the format year-month-day (e.g. 2016-01-01)");
+         // }
          // echo $startDate . "\n" . $endDate . "\n";
       } else {
          // echo "No arguments passed, script ended\n";
          printLog("No arguments passed, script ended\n");
+         // echo json_encode(array('error' => 'Invalide Date'));
+         echo '{"error":"Invalid Date"}';
          exit();
       }
    }
@@ -918,5 +953,19 @@
 
    function readCheckpoint(){
       return restoreFromFile("checkpoint");
+   }
+
+   function calcDuration($conn, $open, $close){
+      $query = "SELECT TIMESTAMPDIFF(second, '" . $open ."', '". $close . "')";
+      $result = $conn->query($query);
+
+      $duration = 0;
+      while($row = $result->fetch_assoc()){
+         foreach($row as $field){
+            $duration = $field;
+         }
+      }
+
+      return $duration;
    }
 ?>

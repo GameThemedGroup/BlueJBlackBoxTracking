@@ -83,7 +83,7 @@
             $numberOfMainInvoked = 0; 
             foreach($invocationEvents as $event){
                // $query = "SELECT code, result From invocations where code like '%Main.main({ })%' and id=" . $event[event_id];
-               $query = "SELECT result From invocations where code like '%Main.main({ })%' and id=" . $event;
+               $query = "SELECT result From invocations where code like '%main%' and id=" . $event;
                // echo $query ."<br>";
                $results = getResult($conn, $query);
 

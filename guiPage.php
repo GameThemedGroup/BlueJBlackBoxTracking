@@ -48,7 +48,7 @@
       <form method="get" style="display:block">
          <input type="radio" name="question" value="numberOfGameExecution.php" checked>Number of Game Execution<br>
          <input type="radio" name="question" value="graphTotalSessionsPerUser.php">Total Sessions Per User<br>
-         <input type="radio" name="question" value="invocationsPerUser.php">Total Invocations Per User<br>
+         <!-- <input type="radio" name="question" value="invocationsPerUser.php">Total Invocations Per User(discarded)<br> -->
          <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
          <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br>
          <input type="radio" name="question" value="topTenComileErrors.php">Top Ten Compile Errors<br>
@@ -86,16 +86,19 @@
             url: url + "?" + $("#topLeft form").serialize(),
             success: function(result) {
                var json = JSON.parse(result);
-
-               var chart = new FusionCharts({
-                  type: json.type,
-                  renderAt: "bottomRight",
-                  width:"100%",
-                  height:"100%",
-                  dataFormat: "json",
-                  dataSource: json.data,
-               });
-               chart.render();
+               if(json.error){
+                  alert(json.error);
+               } else {
+                  var chart = new FusionCharts({
+                     type: json.type,
+                     renderAt: "bottomRight",
+                     width:"100%",
+                     height:"100%",
+                     dataFormat: "json",
+                     dataSource: json.data,
+                  });
+                  chart.render();
+               }
                $("#loading").css("display", "none");
             }
          });

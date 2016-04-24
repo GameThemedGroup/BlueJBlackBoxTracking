@@ -465,7 +465,6 @@
       // //Represent the data using per student's session time per day instead of summation of all students
 
       echo "<div id='topRightGraph'></div>";
-
       echo "<div>";
       echo "<form action='" . $_SERVER['PHP_SELF'] . "' method='POST'>";
       echo "<input type='radio' name='radio' value='column2D'>Column 2D";
