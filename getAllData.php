@@ -45,9 +45,13 @@
       saveToFile($useridFile, $useridList);
 
       //Get session_id using experiment_identifier (e.g.'uwbgtcs')
-      //This is the MOST important query, as this is THE only way to tie the data to our research just like the user_id query
-      $query = "SELECT s.id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
-      
+      //This and the above query are the MOST important queries, as these are THE only way to tie the data to our research just like the user_id query
+      // //This query only returns session_id that are retrievable by experiment identifier
+      // $query = "SELECT s.id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+
+      // //This query returns all sessions USING user_id(s) found with experiment identifier
+      $query = "SELECT id from sessions where user_id IN (" . implode(',', $useridList) . ") order by user_id";
+
       //Store returned mysqli results object into $sessionidList
       $sessionidList = getResultArray($conn, $query, "id");
       saveToFile($sessionidFile, $sessionidList);
@@ -384,73 +388,73 @@
       writeCheckpoint($checkPoint, $key);
    }
 
-   $key = "extensions";
-   if(!$checkPoint[$key]){
-      //Extensions
-      //select all master_event_id from local master_events
-      //At this point this is the table that takes the longest time to download
-      //Have encountered exceeding PHP preset memory while retrieving data
-      //Therefore, we could leave this download out since it only contains extensions used in a project
-      //Which in our case there will be no extensions
+   // $key = "extensions";
+   // if(!$checkPoint[$key]){
+   //    //Extensions
+   //    //select all master_event_id from local master_events
+   //    //At this point this is the table that takes the longest time to download
+   //    //Have encountered exceeding PHP preset memory while retrieving data
+   //    //Therefore, we could leave this download out since it only contains extensions used in a project
+   //    //Which in our case there will be no extensions
       
-      printLog("Getting id(s) from master_events");
-      $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct id from master_events";
-      $masterEventIdList = getResultArray($connLocal, $query, "id");
+   //    printLog("Getting id(s) from master_events");
+   //    $connLocal = connectToLocal("capstoneLocal");
+   //    $query = "SELECT distinct id from master_events";
+   //    $masterEventIdList = getResultArray($connLocal, $query, "id");
 
-      disconnectServer($connLocal);
+   //    disconnectServer($connLocal);
 
-      printLog("Downloading extensions to local");
-      // $conn = connectToBlackBox();
-      $fileCreated = getExtensions($conn, $masterEventIdList);
-      // disconnectServer($conn);
-      updateLocal($fileCreated);
+   //    printLog("Downloading extensions to local");
+   //    // $conn = connectToBlackBox();
+   //    $fileCreated = getExtensions($conn, $masterEventIdList);
+   //    // disconnectServer($conn);
+   //    updateLocal($fileCreated);
 
-      unset($masterEventIdList);
+   //    unset($masterEventIdList);
       
-      writeCheckpoint($checkPoint, $key);
-   }
+   //    writeCheckpoint($checkPoint, $key);
+   // }
 
-   $key = "tests";
-   if(!$checkPoint[$key]){
-      //Test
-      printLog("Getting session_id(s) from master_events");
-      $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct session_id from master_events where event_type = 'Test'";
-      $testidList = getResultArray($connLocal, $query, "session_id");
+   // $key = "tests";
+   // if(!$checkPoint[$key]){
+   //    //Test
+   //    printLog("Getting session_id(s) from master_events");
+   //    $connLocal = connectToLocal("capstoneLocal");
+   //    $query = "SELECT distinct session_id from master_events where event_type = 'Test'";
+   //    $testidList = getResultArray($connLocal, $query, "session_id");
 
-      disconnectServer($connLocal);
+   //    disconnectServer($connLocal);
 
-      printLog("Downloading tests to local");
-      // $conn = connectToBlackBox();
-      $fileCreated = getTests($conn, $testidList);
-      // disconnectServer($conn);
-      updateLocal($fileCreated);
+   //    printLog("Downloading tests to local");
+   //    // $conn = connectToBlackBox();
+   //    $fileCreated = getTests($conn, $testidList);
+   //    // disconnectServer($conn);
+   //    updateLocal($fileCreated);
 
-      unset($testidList);
+   //    unset($testidList);
 
-      writeCheckpoint($checkPoint, $key);
-   }
+   //    writeCheckpoint($checkPoint, $key);
+   // }
 
-   $key = "test_results";
-   if(!$checkPoint[$key]){
-      //Test Results
-      printLog("Getting session_id(s) from master_events");
-      $conn = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct session_id from master_events where event_type = 'TestResult'";
-      $testResultList = getResultArray($conn, $query, "session_id");
-      disconnectServer($conn);
+   // $key = "test_results";
+   // if(!$checkPoint[$key]){
+   //    //Test Results
+   //    printLog("Getting session_id(s) from master_events");
+   //    $conn = connectToLocal("capstoneLocal");
+   //    $query = "SELECT distinct session_id from master_events where event_type = 'TestResult'";
+   //    $testResultList = getResultArray($conn, $query, "session_id");
+   //    disconnectServer($conn);
 
-      printLog("Downloading test_results to local");
-      // $conn = connectToBlackBox();
-      $fileCreated = getTestResults($conn, $testResultList);
-      // disconnectServer($conn);
-      updateLocal($fileCreated);
+   //    printLog("Downloading test_results to local");
+   //    // $conn = connectToBlackBox();
+   //    $fileCreated = getTestResults($conn, $testResultList);
+   //    // disconnectServer($conn);
+   //    updateLocal($fileCreated);
 
-      unset($testResultList);
+   //    unset($testResultList);
       
-      writeCheckpoint($checkPoint, $key);
-   }
+   //    writeCheckpoint($checkPoint, $key);
+   // }
 
    // //////////////////////////////////////////////////////////////////////
    // //Use updated local master_events to retrieve all client_address_id related to experiment

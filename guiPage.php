@@ -6,7 +6,30 @@
 <!-- <script type="text/javascript" src="datepicker/jquery.plugin.js"></script> 
 <script type="text/javascript" src="datepicker/jquery.datepick.js"></script> -->
 
-<style>
+<style type="text/css">
+   html, body { height: 100%; padding: 0; margin: 0; }
+   div {overflow: scroll;}
+   table {
+      border-collapse: collapse;
+      table-layout: fixed;
+      width: 100%;
+   }
+   td, th{
+      border: 1px solid;
+      word-wrap: break-word;
+   }
+   #left {width:20%; height:100%;float:left;background:#C0C0C0;}
+   #right {width:80%; height:100%;float:left}
+   #topLeft { background:#888888; height:40%;}
+   /*#topRight { background:#C0C0C0; height:20%; }*/
+   #bottomLeft {height:60%;}
+   #bottomLeft table tr td:first-child, #bottomLeft table tr th:first-child {
+      width: 80%;
+   }
+   #bottomLeft td, #bottomLeft th {
+      width: 20%;
+   }
+   #bottomRight { background: white; height:auto;}
    #loading {
       position: absolute;
       left: 50%;
@@ -19,17 +42,6 @@
 </style>
 </head>
 <body>
-
-<style type="text/css">
-   html, body { height: 100%; padding: 0; margin: 0; }
-   div {overflow: scroll;}
-   #left {width:20%; height:100%;float:left;background:#C0C0C0;}
-   #right {width:80%; height:100%;float:left}
-   #topLeft { background:#888888; height:40%;}
-   /*#topRight { background:#C0C0C0; height:20%; }*/
-   #bottomLeft {height:60%;}
-   #bottomRight { background: white; height:auto;}
-</style>   
 
 <script type="text/javascript" src="fusioncharts/js/fusioncharts.js"></script>
 <script type="text/javascript" src="fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
@@ -52,11 +64,12 @@
          <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
          <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br>
          <input type="radio" name="question" value="topTenComileErrors.php">Top Ten Compile Errors<br>
-         <input type="radio" name="question" value="occuranceOfSessions.php">Occurance of Sessions(TODO)<br>
-         <input type="radio" name="question" value="">Participation Rate(TODO)<br>
+         <input type="radio" name="question" value="occuranceOfSessions.php">Occurance of Sessions<br>
+         <input type="radio" name="question" value="participationRate.php">Participation Rate<br>
          <input type="radio" name="question" value="lastFewEvents.php">Last few events before BlueJ closes<br>
-         <input type="radio" name="question" value="">Duration on SpaceSmasherAPI(TODO)<br><br>
+         <input type="radio" name="question" value="durationOfSpaceSmasherAPI.php">Duration on SpaceSmasherAPI<br><br>
 
+         <INPUT TYPE = "number" placeholder="User ID" NAME="userid" min="0">
          <INPUT TYPE = "Text" placeholder ="Start Date" NAME = "startDate">
          <INPUT TYPE = "Text" placeholder ="End Date" NAME = "endDate">
          <INPUT TYPE = submit name="Submit">
@@ -77,6 +90,8 @@
 <script type="text/javascript">
    
    $("#topLeft form").submit(function() {
+         $("#bottomLeft").html("");
+
          var startDate = $("#startDate").val();
          var endDate = $("#endDate").val();
          var url = "researchQuestions/" + $('input[name=question]:checked', '#topLeft form').val();
@@ -89,6 +104,9 @@
                if(json.error){
                   alert(json.error);
                } else {
+                  var sideChart = json.sideChart;
+                  $("#bottomLeft").html(sideChart);
+
                   var chart = new FusionCharts({
                      type: json.type,
                      renderAt: "bottomRight",
@@ -102,7 +120,6 @@
                $("#loading").css("display", "none");
             }
          });
-
          return false;
    });
 </script>

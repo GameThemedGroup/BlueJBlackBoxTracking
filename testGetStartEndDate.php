@@ -63,8 +63,19 @@
    // print_r($test);
    // writeCheckpoint($test, "init");
 
-   print_r(readCheckpoint());
+   // print_r(readCheckpoint());
 
+   $conn = connectToBlackBox();
+   $query = "SELECT distinct s.user_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+   $useridList = getResultArray($conn, $query, "user_id");
+
+   $query = "SELECT id from sessions where user_id IN (" . implode(',', $useridList) . ") order by user_id";
+   // echo $query; 
+   $sessionidList = getResultArray($conn, $query, "id");
+
+   echo "<pre>";
+   print_r($sessionidList);
+   echo "</pre>";
    // print_r(getStartEndDate());
    // echo exec('whoami');
    // $file = "downloadStatus";

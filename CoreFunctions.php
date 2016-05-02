@@ -968,4 +968,6 @@
 
       return $duration;
    }
+
+   
 ?>
