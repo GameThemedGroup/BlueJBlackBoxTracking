@@ -10,12 +10,6 @@
    date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 
-   // //Read status from downloadStatus file
-   $useridFile = "useridFile";
-   $sessionidFile = "sessionidFile";
-   $projectidFile = "projectidFile";
-   $sourceFileidFile = "sourceFileidFile";
-
    $checkPoint = readCheckpoint();
 
    if(array_key_exists("started", $checkPoint) && $checkPoint["started"] == 1){
@@ -37,28 +31,56 @@
    $key = "init";
    if(!$checkPoint[$key]){
       //Get user_id using experiment_identifier (e.g.'uwbgtcs')
-      //The following query returns all UNIQUE user_id using the experiment_identifier = uwbgtcs
-      $query = "SELECT distinct s.user_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
+      //The following query returns all UNIQUE user_id and participant_id using the experiment_identifier = uwbgtcs
+      $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s where created_at between '" .$startDate. "' and '" .$endDate. "'";
       
       //Store returned mysqli results object into $useridList
-      $useridList = getResultArray($conn, $query, "user_id");
+      $results = getResult($conn, $query);
+      $useridList = array();
+
+      if($results != null){
+         while($row = $results->fetch_assoc()){
+            array_push($useridList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id'], 'participant_identifier' => $row['participant_identifier']));
+         }
+      } 
+      mysqli_free_result($results);
       saveToFile($useridFile, $useridList);
-
-      //Get session_id using experiment_identifier (e.g.'uwbgtcs')
-      //This and the above query are the MOST important queries, as these are THE only way to tie the data to our research just like the user_id query
-      // //This query only returns session_id that are retrievable by experiment identifier
-      // $query = "SELECT s.id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
-
-      // //This query returns all sessions USING user_id(s) found with experiment identifier
-      $query = "SELECT id from sessions where user_id IN (" . implode(',', $useridList) . ") order by user_id";
-
-      //Store returned mysqli results object into $sessionidList
-      $sessionidList = getResultArray($conn, $query, "id");
-      saveToFile($sessionidFile, $sessionidList);
    
       writeCheckpoint($checkPoint, $key);
    } else {
       $useridList = restoreFromFile($useridFile);
+      // $sessionidList = restoreFromFile($sessionidFile);
+   }
+
+   $key = "master_events";
+   if(!$checkPoint[$key]){
+      // //master_events table
+      // //Use the above useridList to retrieve all related participants master events from the Whitebox server
+      // //Populating the master_events table has to be the first table to downloaded because
+      // //all other table will be related from it.
+      
+      printLog("Start populating local master_events with user_id");
+      $fileCreated = getMasterEvents($conn, $useridList);
+      updateLocal($fileCreated);
+
+      // //Use updated local master_events to retrieve all project_id related to experiment if master_events table has been downloaded
+      printLog("Start retrieving all project_id related to experiment");
+      $connLocal = connectToLocal("capstoneLocal");
+   
+      $query = "SELECT distinct project_id From master_events";
+      $projectidList = getResultArray($connLocal, $query, "project_id");
+      saveToFile($projectidFile, $projectidList);
+
+      // //This query returns all sessions USING user_id(s) found with experiment identifier
+      $query = "SELECT distinct session_id from master_events";
+      $sessionidList = getResultArray($conn, $query, "id");
+      saveToFile($sessionidFile, $sessionidList);
+      
+      disconnectServer($connLocal);
+
+      writeCheckpoint($checkPoint, $key);
+   } else {
+      $projectidList = restoreFromFile($projectidFile);
       $sessionidList = restoreFromFile($sessionidFile);
    }
 
@@ -96,33 +118,6 @@
       unset($sessionidList);
       
       writeCheckpoint($checkPoint, $key);
-   }
-
-   $key = "master_events";
-   if(!$checkPoint[$key]){
-      // //master_events table
-      // //Use the above useridList to retrieve all related participants master events from the Whitebox server
-      // //Populating the master_events table has to be the first table to downloaded because
-      // //all other table will be related from it.
-      
-      printLog("Start populating local master_events with user_id");
-      $fileCreated = getMasterEvents($conn, $useridList, $startDate, $endDate);
-      updateLocal($fileCreated);
-
-      // //Use updated local master_events to retrieve all project_id related to experiment if master_events table has been downloaded
-      
-      printLog("Start retrieving all project_id related to experiment");
-      $connLocal = connectToLocal("capstoneLocal");
-   
-      $query = "SELECT distinct project_id From master_events";
-      $projectidList = getResultArray($connLocal, $query, "project_id");
-      saveToFile($projectidFile, $projectidList);
-      
-      disconnectServer($connLocal);
-
-      writeCheckpoint($checkPoint, $key);
-   } else {
-      $projectidList = restoreFromFile($projectidFile);
    }
 
    $key = "users";

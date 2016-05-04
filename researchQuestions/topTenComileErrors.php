@@ -4,18 +4,21 @@
 
    // //Question:
    // //Do we have similar compiler errors as the other previous researches that used the Blackbox database.
+   // //Use result to verify that the tracked data show similar outcome 
    
    // //Answer: 
    // //Missing ";" is the number 1 compiler error follow by other types of syntac errors.
    
    // //Implication of answer:
    // //For the top few errors, we shared similar outcome as the other researches where syntac error has the highest number of errors.
-   
+   // //Which implies that the tracking is working and we have similar student's performance using top error types.
+
    // //Answer's correctness: 
-   // //The error is only as good as the BlueJ IDE is able to identify and sends the corresponding error correctly to the server.
+   // //The query is very simple and straight forward and therefore has a low rate of inaccuracy
    
    // //Methods for improving correctness: 
-   // //
+   // //n/a
+
    
    $conn = connectToLocal($db);
    //compile_error from invocations when compiling the generated code (e.g. be- cause the user entered invalid parameters)
@@ -25,12 +28,6 @@
    $query = "select distinct message, count(message) as count from compile_outputs group by message order by count(message) desc limit 10";
    $result = getResult($conn, $query);
 
-   // printResultInTable($result);
-   // echo "<table border=1>";
-   // $fields = getFieldNames($results);
-   // printArray($fields, true);
-   // printQueryResults($results);
-   // echo "</table>";
    if($result){
       $arrData = array("chart" => initChartProperties());
       $chartType = "column2D";
@@ -56,15 +53,9 @@
          );
       }
 
-      // $jsonEncodedData = json_decode($arrData, true);
-      // $jsonEncodedData = json_encode($arrData);
-      // $columnChart = new FusionCharts("mscolumn2d", "myFirstChart" , 1000, 650, "topRight", "json", $jsonEncodedData);
-      // $columnChart = new FusionCharts("column2D", "myFirstChart" , 1000, 650, "bottomRight", "json", $jsonEncodedData);
-      // Render the chart
-      // $columnChart->render();
-      // createChartObj($arrData, $chartType)->render();
       echo createChartObj($arrData, $chartType);
-      disconnectServer($conn);
-      unset($arrData);
    }
+   
+   disconnectServer($conn);
+   unset($arrData);
 ?>

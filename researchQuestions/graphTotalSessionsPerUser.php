@@ -3,22 +3,30 @@
    include "../graphFunctions.php";
 
    // //Question (why):
-   // //Total sessions per user. Higher the sessions = higher invocations?
+   // //Total sessions per user, a session is an opening and closing of BlueJ. 
+   // //Does higher number of sessions correlates to working effort? 
+   // //The more sessions there are could imply more chances of students actually working on assignments or other behaviors related to programming.
 
    // //Answer: 
    // //Display total sessions within two dates per user
 
    // //Implication of answer:
-   // //There is as high as 356 sessions within a month time. That student could be particular hardwork or just love to trail and error.
+   // //There is as high as 105 sessions within a month time. 
+   // //Could mean student gets distracted very often due to lack of concentration or lack of focus. Therefore having to open and close the BlueJ
+
 
    // //Answer's correctness: 
-   // //
+   // //Some user’s recorded session so minimal as if they never closed the BlueJ or just did their work in another computer that has not opted in for data-collection. 
 
    // //Methods for improving correctness: 
-   // //
+   // //Ensures student to stick with one computer as much as possible
+
+   // //Get start and end date for the data to download
+   $dateRange = getStartEndDate();
+   $startDate = $dateRange[0];
+   $endDate = $dateRange[1];
    
-   
-   $query = "SELECT user_id, count(user_id) as count from sessions group by user_id";
+   $query = "SELECT user_id, count(user_id) as count from sessions where participant_id != 1 and created_at BETWEEN '".$startDate ."' and '".$endDate."' group by user_id";
    
    $conn = connectToLocal($db);
    $result = getResult($conn, $query);
@@ -39,16 +47,23 @@
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
       $arrData["data"] = array();
+      $allArray = array();
       while($row = $result->fetch_array()) {
+         $allArray[$row["user_id"]] = $row["count"];
+      }
+
+      arsort($allArray);
+
+      foreach($allArray as $key => $value){
          array_push($arrData["data"], 
             array(
-               "label" => "UserID: " . $row["user_id"],
-               "value" => $row["count"]
+               "label" => "User ID: ".$key,
+               "value" => $value
             )
          );
       }
 
-      echo createChartObj($arrData, $chartType);
+      echo createChartObj($arrData, $chartType, getStat($allArray));
       
       disconnectServer($conn);
    }

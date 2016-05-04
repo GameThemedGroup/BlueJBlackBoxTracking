@@ -64,12 +64,13 @@
          <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
          <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br>
          <input type="radio" name="question" value="topTenComileErrors.php">Top Ten Compile Errors<br>
-         <input type="radio" name="question" value="occuranceOfSessions.php">Occurance of Sessions<br>
+         <input type="radio" name="question" value="occurrenceOfSessions.php">Occurance of Sessions<br>
          <input type="radio" name="question" value="participationRate.php">Participation Rate<br>
          <input type="radio" name="question" value="lastFewEvents.php">Last few events before BlueJ closes<br>
          <input type="radio" name="question" value="durationOfSpaceSmasherAPI.php">Duration on SpaceSmasherAPI<br><br>
 
          <INPUT TYPE = "number" placeholder="User ID" NAME="userid" min="0">
+         <INPUT TYPE = "number" placeholder="Participant ID" NAME="participantid" min="0">
          <INPUT TYPE = "Text" placeholder ="Start Date" NAME = "startDate">
          <INPUT TYPE = "Text" placeholder ="End Date" NAME = "endDate">
          <INPUT TYPE = submit name="Submit">

@@ -4,7 +4,7 @@
    // //Question:
    // //Do any students go into the SpaceSmasherAPI and modify it? 
    // //If so, how long do they spend on it?.
-   // //Modifying the API could indicate students' interest into experimenting more through changing the code. 
+   // //Modifying the API could indicate students' interest into experimenting by changing the code. 
 
    // //Answer: 
    // //Highest time spent with API was 169426 seconds and the least with 1 second
@@ -105,6 +105,6 @@
             )
          );
       }
-      echo createChartObj($arrData, $chartType);
+      echo createChartObj($arrData, $chartType, getStat($allArray));
    }
 ?>

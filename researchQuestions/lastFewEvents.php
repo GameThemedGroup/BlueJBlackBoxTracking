@@ -3,23 +3,24 @@
    include "../graphFunctions.php";
    // //Question:
    // //What do students do just before they close BlueJ?
+   // //Are they editing code or compiling or running the game?
+   // //A student who spends more editing or running the game could be a result of higher attraction due to the GTCS curriculum.
    
    // //Answer: 
-   // //Event like compilation and invocation were the most common events that occured before BlueJ was closed
+   // //Event like compilation and edit were the most common events that occured before BlueJ was closed
    
    // //Implication of answer:
    // //Those events were immediately before BlueJ closed, which could mean the student might have compiled for the last
-   // //before they closed BlueJ for the day. Or a student invoked a function just to see if it works and then closed BlueJ
+   // //before they closed BlueJ for the day. Or a students' last edit before closing BlueJ
    
    // //Answer's correctness: 
    // //The data doesn't provide enough detail as to what other things students might be doing just before they closed BlueJ
-   // //The only noticable events in invocation and compilation
+   // //The only noticable events are edit and compilation
    
    // //Methods for improving correctness: 
-   // //Represent the data using per student's session time per day instead of summation of all students
+   // //Represent the data using per student's last few events per day instead of summation of all students during the entire month. 
 
    //Find all events in master_events when BlueJ closes, name='bluej_finish'
-   
    $conn = connectToLocal($db);
    $numOfEvent = 20;
 
@@ -28,8 +29,10 @@
    $startDate = $dateRange[0];
    $endDate = $dateRange[1];
 
-   $query = "SELECT distinct event_type from master_events where event_type!='' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
-   $eventTypes = getResultArray($conn, $query, 'event_type');
+   // $query = "SELECT distinct event_type from master_events where event_type!='' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
+   $query = "SELECT distinct name from master_events where name != 'bluej_start' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
+   // $eventTypes = getResultArray($conn, $query, 'event_type');
+   $eventTypes = getResultArray($conn, $query, 'name');
 
    $typeCount = array();
    $category = array();
@@ -72,9 +75,11 @@
          else  
             $min = $bluejClose['sequence_num'] - $numOfEvent;
 
-         $query = "SELECT event_type From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND event_type !='' AND sequence_num between " . $min . " AND " . $max;
+         // $query = "SELECT event_type From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND event_type !='' AND sequence_num between " . $min . " AND " . $max;
+         $query = "SELECT name From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND sequence_num between " . $min . " AND " . $max;
          // echo $query . "<br>";
-         $results = getResultArray($conn, $query, "event_type");
+         // $results = getResultArray($conn, $query, "event_type");
+         $results = getResultArray($conn, $query, "name");
          
          if(array_key_exists($results[0], $typeCount)){ 
             $typeCount[$results[0]]++;
@@ -90,6 +95,7 @@
       // }
 
       $arrData["data"] = array();
+      arsort($typeCount);
       foreach($typeCount as $type=>$value){
          array_push($arrData["data"], 
             array(

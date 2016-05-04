@@ -5,6 +5,14 @@
    $dbToUpdate = 'capstoneLocal';
    //TODO replace $db with $dbToUpdate
    $db = 'capstoneLocal';
+   $root = '../';
+
+   // //Read status from downloadStatus file
+   $useridFile = "useridFile";
+   $nonUniqueUserFile = "nonUniqueUser";
+   $sessionidFile = "sessionidFile";
+   $projectidFile = "projectidFile";
+   $sourceFileidFile = "sourceFileidFile";
 
    function isRealDate($date){
       if(false === strtotime($date)){
@@ -62,6 +70,36 @@
       }
    }
 
+   function getNonUniqueUsers($conn){
+      $query = "SELECT distinct user_id, participant_id from master_events";
+      
+      $results = getResult($conn, $query);
+      $nonUniqueUserList = array();
+      if($results != null){
+         while($row = $results->fetch_assoc()){
+            array_push($nonUniqueUserList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id']));
+         }
+      } 
+      
+      mysqli_free_result($results);
+      return $nonUniqueUserList;
+   }
+
+   function getUniqueUsers($conn){
+      $query = "SELECT distinct user_id, participant_id from master_events where participant_id != 1";
+      
+      $results = getResult($conn, $query);
+      $uniqueUserList = array();
+      if($results != null){
+         while($row = $results->fetch_assoc()){
+            array_push($uniqueUserList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id']));
+         }
+      } 
+
+      mysqli_free_result($results);
+      return $uniqueUserList;
+   }
+
    function connectToBlackBox(){
       global $endLine;
 
@@ -115,12 +153,14 @@
    function updateLocal($updateFileName){
       global $dbToUpdate;
       global $endLine;
+      global $root;
 
       // echo $updateFileName . $endLine;
       if(file_exists($updateFileName)){
          $conn = connectToLocal($dbToUpdate);
          //Removes "_out.csv" to get table name
-         $tableName = substr($updateFileName, 0, -8);
+         $prefix = $root."csv/";
+         $tableName = substr($updateFileName, strlen($prefix), -8);
          // echo "Table is " . $tableName . $endLine;
 
          $updateLocal = "LOAD DATA LOCAL infile '" .$updateFileName. "'
@@ -223,10 +263,11 @@
 
    function getTableContents($conn, $ids, $table, $field){
       global $endLine;
+      global $root;
 
       if(count($ids) > 0){
          // $fileName = "output/". $table . "_out.csv";
-         $fileName = $table . "_out.csv";
+         $fileName = $root . "csv/" . $table . "_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -271,155 +312,43 @@
    function getBenchObjects($conn, $results){
       $fileCreated = getTableContents($conn, $results, "bench_objects", "package_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fileName = $table . "_out.csv";
-         $fp = fopen($fileName, 'w');
-         foreach($results as $session){
-            // echo $user['user_id'] . $endLine;
-            #$query = "SELECT * From bench_objects WHERE package_id= '".$session['package_id']."'";
-            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$session['package_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getBenchObjectsFixture($conn, $results){
       // getBenchObjects($conn, $results, "bench_objects_fixtures", "bench_object_id");
       $fileCreated = getTableContents($conn, $results, "bench_objects_fixtures", "bench_object_id");
       return $fileCreated;
-      /*if($results->num_rows > 0){
-         $fp = fopen("bench_objects_fixture_out.csv", 'w');
-         foreach($results as $session){
-            // echo $session['id'] . $endLine;
-            $query = "SELECT * From bench_objects_fixtures WHERE bench_object_id= '".$session['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }*/
    }
 
    function getBreakpoints($conn, $ids){
       $fileCreated = getTableContents($conn, $ids, "breakpoints", "source_file_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("breakpoints_out.csv", 'w');
-         foreach($results as $sourceId){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From breakpoints WHERE source_file_id= '".$sourceId['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getClientAddressId($conn, $results){
       $fileCreated = getTableContents($conn, $results, "client_addresses", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("client_address_out.csv", 'w');
-         foreach($results as $client){
-            // echo $client['client_address_id'] . $endLine;
-            $query = "SELECT * From client_addresses WHERE id= '".$client['client_address_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            printQueryResults($results);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getCodePadEvents($conn, $results){
       $fileCreated = getTableContents($conn, $results, "codepad_events", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("codepad_events_out.csv", 'w');
-         foreach($results as $event){
-            echo $event['event_id'] . $endLine;
-            $query = "SELECT * From codepad_events WHERE id = '".$event['event_id']."'";
-            echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getCompileEvents($conn, $results){
       $fileCreated = getTableContents($conn, $results, "compile_events", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("compile_events_out.csv", 'w');
-         foreach($results as $sourceId){
-            echo $user['user_id'] . $endLine;
-            $query = "SELECT * From compile_events WHERE id='".$sourceId['compile_event_id']."'";
-            echo $query . $endLine;
-            // $results = getResult($conn, $query);
-
-            // foreach ($results as $val) {
-            //    fputcsv($fp, $val);       
-            // }
-         }
-         // fclose($fp);
-      }
-      */
    }
 
    function getCompileInputs($conn, $results){
       $fileCreated = getTableContents($conn, $results, "compile_inputs", "source_file_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("compile_inputs_out.csv", 'w');
-         foreach($results as $sourceId){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From compile_inputs WHERE source_file_id= '".$sourceId['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getCompileOutputs($conn, $results){
-      $fileCreated = "compile_outputs_out.csv";
+      global $root;
+
+      $fileCreated = $root ."csv/compile_outputs_out.csv";
       if($results->num_rows > 0){
          $fp = fopen($fileCreated, 'w');
          foreach($results as $sourceId){
@@ -440,27 +369,13 @@
    function getDebuggerEvents($conn, $results){  
       $fileCreated = getTableContents($conn, $results, "debugger_events", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("debugger_events_out.csv", 'w');
-         foreach($results as $event){
-            // echo $event['event_id'] . $endLine;
-            $query = "SELECT * From debugger_events WHERE id = '".$event['event_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getDebuggerStackEntries($conn, $results){
+      global $root;
+
       if(count($results) > 0){
-         $fp = fopen("stack_entries_out.csv", 'w');
+         $fp = fopen($root. "csv/stack_entries_out.csv", 'w');
          printLog("Created CSV file with filename of stack_entries_out.csv");
 
          foreach($results as $event){
@@ -477,8 +392,10 @@
    }
 
    function getInvocationStackEntries($conn, $results){
+      global $root;
+
       if(count($results) > 0){
-         $fp = fopen("stack_entries_out.csv", 'w');
+         $fp = fopen($root. "csv/stack_entries_out.csv", 'w');
          printLog("Created CSV file with filename of stack_entries_out.csv");
 
          foreach($results as $event){
@@ -497,22 +414,6 @@
    function getExtensions($conn, $results){
       $fileCreated = getTableContents($conn, $results, "extensions", "master_event_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("extensions_out.csv", 'w');
-         foreach($results as $event){
-            // echo $event['id'] . $endLine;
-            $query = "SELECT * From extensions WHERE master_event_id = '".$event['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-            
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getFieldNames($results){
@@ -537,103 +438,38 @@
    function getFixtures($conn, $results){
       $fileCreated = getTableContents($conn, $results, "fixtures", "source_file_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("fixtures_out.csv", 'w');
-         foreach($results as $session){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From fixtures WHERE source_file_id= '".$session['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getIspectors($conn, $ids){
       $fileCreated = getTableContents($conn, $ids, "inspectors", "session_id");
       return $fileCreated;
-      /*
-      if($userIds->num_rows > 0){
-         $fp = fopen("inspectors_out.csv", 'w');
-         foreach($userIds as $session){
-            echo "Querying for Session " . $session['id'] . "<br>\n";
-            $query = "SELECT * From inspectors WHERE session_id= '".$session['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            echo "Writing Sesssion " . $session['id'] . "<br>\n";
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getInstallations($conn, $results){
       $fileCreated = getTableContents($conn, $results, "installation_details", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("installation_out.csv", 'w');
-         foreach($results as $installation_details_id){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From installation_details WHERE id= '".$installation_details_id['installation_details_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getInvocations($conn, $ids){
       $fileCreated = getTableContents($conn, $ids, "invocations", "session_id");
       return $fileCreated;
-      /*
-      //This event has a package_id field, which indicates which package window the method was invoked from
-      if($results->num_rows > 0){
-         $fp = fopen("invocation_out.csv", 'w');
-         foreach($results as $session){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From invocations WHERE session_id= '".$session['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
-   function getMasterEvents($conn, $userIds, $startDate, $endDate){
+   function getMasterEvents($conn, $userIds){
       $table = "master_events";
       $field = "user_id";
       // $fileCreated = getTableContents($conn, $userIds, $table, $field, $field);
       global $endLine;
+      global $root;
 
       if(count($userIds) > 0){
-         $fileName = $table . "_out.csv";
+         $fileName = $root . "csv/" . $table . "_out.csv";
          echo "Created CSV file with filename of " . $fileName . $endLine;
          $fp = fopen($fileName, 'w');
 
          foreach($userIds as $id){
             // echo $result[$result_id] . $endLine;
-            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id."' and created_at between '" . $startDate . "' and '" . $endDate . "'";
+            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id[$field]."' and participant_id = '".$id['participant_id'] . "'";
             // echo $query . $endLine;
             $results = getResult($conn, $query);
 
@@ -657,198 +493,105 @@
    function getPackages($conn, $ids){
       $fileCreated = getTableContents($conn, $ids, "packages", "project_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("packages_out.csv", 'w');
-         foreach($results as $project){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From packages WHERE project_id= '".$project['project_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getProjects($conn, $results){
+      global $root;
       $fileCreated = getTableContents($conn, $results, "projects", "user_id");
-      return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("projects_out.csv", 'w');
-         foreach($results as $user){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From projects WHERE user_id= '".$user['user_id']."'";
-            // echo $query . $endLine;
+
+      $table = 'projects';
+      $field = 'user_id';
+
+      if(count($userIds) > 0){
+         // $fileName = "output/". $table . "_out.csv";
+         $fileName = $root . "csv/" .$table . "_out.csv";
+         printLog("Created CSV file with filename of " . $fileName);
+         $fp = fopen($fileName, 'w');
+
+         foreach($ids as $id => $value){
+            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$value[$field]."'";
             $results = getResult($conn, $query);
 
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
+            if($results->num_rows > 0){
+               //returns the result object if it's not null
+               foreach ($results as $val) {
+                  fputcsv($fp, $val);       
+               }
             }
+            // mysqli_free_result($results);
          }
+
          fclose($fp);
+         printLog($table . " table download completed");
+         return $fileName;
+      } else {
+         printLog($table . " table was not downloaded");
       }
-      */
    }
 
    function getSessions($conn, $results){
       $fileCreated = getTableContents($conn, $results, "sessions", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("sessions_out.csv", 'w');
-         foreach($results as $session){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From sessions WHERE id= '".$session['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getSourceFiles($conn, $results){
       $fileCreated = getTableContents($conn, $results, "source_files", "project_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("source_file_out.csv", 'w');
-         foreach($results as $project){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From source_files WHERE project_id= '".$project['project_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getSourceHashes($conn, $results){
       $fileCreated = getTableContents($conn, $results, "source_hashes", "id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("source_hashes_out.csv", 'w');
-         foreach($results as $project){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From source_hashes WHERE id= '".$project['package_id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getSourceHistories($conn, $ids){
       $fileCreated = getTableContents($conn, $ids, "source_histories", "source_file_id");
       return $fileCreated;
-      /*
-      $fileCreated = "source_histories_out.csv";
-
-      if($ids->num_rows > 0){
-         $fp = fopen("source_histories_out.csv", 'w');
-         foreach($ids as $sourceId){
-            // echo $user['user_id'] . $endLine;
-            // $query = "SELECT id, master_event_id, source_file_id, source_history_type, old_source_file_id From source_histories WHERE source_file_id= '".$sourceId['id']."'";
-            $query = "SELECT * From source_histories WHERE source_file_id= '".$sourceId['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-
-            // printQueryResults($results); echo "<br><br>";
-
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-               // print_r($val);
-            }
-         }
-         fclose($fp);
-      }
-
-      return $fileCreated;
-      */
    }
 
    function getTests($conn, $results){
       $fileCreated = getTableContents($conn, $results, "tests", "session_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("tests_out.csv", 'w');
-         foreach($results as $event){
-            // echo $event['id'] . $endLine;
-            $query = "SELECT * From tests WHERE session_id = '".$event['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-            
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getTestResults($conn, $results){
       $fileCreated = getTableContents($conn, $results, "test_results", "session_id");
       return $fileCreated;
-      /*
-      if($results->num_rows > 0){
-         $fp = fopen("test_results_out.csv", 'w');
-         foreach($results as $event){
-            // echo $event['id'] . $endLine;
-            $query = "SELECT * From test_results WHERE session_id = '".$event['id']."'";
-            // echo $query . $endLine;
-            $results = getResult($conn, $query);
-            
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
-            }
-         }
-         fclose($fp);
-      }
-      */
    }
 
    function getUsers($conn, $userIds){
-      $fileCreated = getTableContents($conn, $userIds, "users", "id");
-      return $fileCreated;
-      /*
-      if($userIds->num_rows > 0){
-         $fp = fopen("users_out.csv", 'w');
-         foreach($userIds as $user){
-            // echo $user['user_id'] . $endLine;
-            $query = "SELECT * From users WHERE id= '".$user['user_id']."'";
-            // echo $query . $endLine;
+      // $fileCreated = getTableContents($conn, $userIds, "users", "user_id");
+      global $endLine;
+      global $root;
+
+      $table = 'users';
+      $field = 'id';
+
+      if(count($userIds) > 0){
+         // $fileName = "output/". $table . "_out.csv";
+         $fileName = $root . "csv/" . $table . "_out.csv";
+         printLog("Created CSV file with filename of " . $fileName);
+         $fp = fopen($fileName, 'w');
+
+         foreach($ids as $id => $value){
+            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$value['user_id']."'";
             $results = getResult($conn, $query);
 
-            foreach ($results as $val) {
-               fputcsv($fp, $val);       
+            if($results->num_rows > 0){
+               //returns the result object if it's not null
+               foreach ($results as $val) {
+                  fputcsv($fp, $val);       
+               }
             }
+            // mysqli_free_result($results);
          }
+
          fclose($fp);
+         printLog($table . " table download completed");
+         return $fileName;
+      } else {
+         printLog($table . " table was not downloaded");
       }
-      */
    }
 
    function printResultInTable($results){
@@ -928,7 +671,8 @@
    }
 
    function saveToFile($fileName, $status) {
-      file_put_contents($fileName, serialize($status));
+      global $root;
+      file_put_contents($root . "checkpoints/" . $fileName, serialize($status));
    }
 
    function writeCheckpoint(&$checkPoint, $key){
@@ -939,7 +683,10 @@
    }
 
    function restoreFromFile($fileName){
+      global $root;
+
       $data = array();
+      $fileName = $root . "checkpoints/" . $fileName;
 
       if(file_exists($fileName)){
          $data = file_get_contents($fileName);
@@ -968,6 +715,4 @@
 
       return $duration;
    }
-
-   
 ?>
