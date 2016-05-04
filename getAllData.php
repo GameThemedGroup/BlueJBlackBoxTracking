@@ -7,6 +7,7 @@
    ini_set('memory_limit', '512M');
 
    include 'CoreFunctions.php';
+   $root = './';
    date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 
@@ -43,7 +44,7 @@
             array_push($useridList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id'], 'participant_identifier' => $row['participant_identifier']));
          }
       } 
-      
+
       mysqli_free_result($results);
       saveToFile($useridFile, $useridList);
    

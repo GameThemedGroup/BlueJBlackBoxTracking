@@ -23,39 +23,55 @@
    //Find all events in master_events when BlueJ closes, name='bluej_finish'
    $conn = connectToLocal($db);
    $numOfEvent = 20;
+   $stat = "";
 
    // //Get start and end date for the data to download
    $dateRange = getStartEndDate();
    $startDate = $dateRange[0];
    $endDate = $dateRange[1];
 
-   // $query = "SELECT distinct event_type from master_events where event_type!='' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
-   $query = "SELECT distinct name from master_events where name != 'bluej_start' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
-   // $eventTypes = getResultArray($conn, $query, 'event_type');
+   if(isset($_GET['userid']) && isset($_GET['participantid'])){
+      $userid = $_GET['userid'];
+      $participantid = $_GET['participantid'];
+      $caption = "Last few events before closing BlueJ for User ID: " . $userid . " and Participant ID: " . $participantid;
+   } else {
+      $caption = "Last few events before closing BlueJ";
+   }
+
+   // //Query for return all possible name of event between the time frame
+   if($userid == null || $participantid == null){
+      $query = "SELECT distinct name from master_events where name != 'bluej_start' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
+   } else {
+      $query = "SELECT distinct name from master_events where name != 'bluej_start' and user_id = ".$userid." and participant_id = ".$participantid." and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
+   }
    $eventTypes = getResultArray($conn, $query, 'name');
 
    $typeCount = array();
    $category = array();
+
+   // //Create labels for chart object with eventType arrays and initialize typeCount to 0 for each type of name
    foreach($eventTypes as $type){
       array_push($category, array('label' => $type));
       $typeCount[$type] = 0;
    }
 
-   //a bluej_start to a bluej_finish is a session
-   //we can find the end sequence num for a particular session
-   $query = "SELECT session_id, sequence_num from master_events where name = 'bluej_finish' and created_at BETWEEN '".$startDate."' AND '".$endDate."' order by id desc";
+   // //A bluej_start to a bluej_finish is a session
+   // //We can find the end sequence num for a particular session
+   // //First we want to find all the bluej_finish events
+   if($userid == null || $participantid == null){
+      $query = "SELECT session_id, sequence_num from master_events where name = 'bluej_finish' and created_at BETWEEN '".$startDate."' AND '".$endDate."' order by id desc";
+   } else {
+      $query = "SELECT session_id, sequence_num from master_events where name = 'bluej_finish' and user_id = ".$userid." and participant_id = ".$participantid." and created_at BETWEEN '".$startDate."' AND '".$endDate."' order by id desc";
+   }
    $bluejCloseEvents = getResult($conn, $query);
 
-   // echo "<table border=1>";
-   // printQueryResults($bluejCloseEvents);
-   // echo "</table>";
-
    if($bluejCloseEvents->num_rows > 0){
+      $stat .= "Number of bluej_finish event: " . $bluejCloseEvents->num_rows . "<br>";
       $arrData = array("chart" => initChartProperties());
       $chartType = "column2d";
 
       $propertiesToChange = array(
-            "caption" => "Last few events before closing BlueJ",
+            "caption" => $caption,
             "xAxisName"=> "Event types",
             "yAxisName"=> "Number of events",
             "paletteColors" => "#0075c2, #ff0000",
@@ -63,36 +79,27 @@
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
-      foreach($bluejCloseEvents as $bluejClose){
-         // echo "session_id: ". $bluejClose['session_id'] . "</br> last sequence_num: ".$bluejClose['sequence_num']."<br>";
-         
-         //last event is the one before the LAST session, bluej_close
+      foreach($bluejCloseEvents as $bluejClose){      
+         //last event is the ONE event before the LAST session bluej_finish
          $max = $bluejClose['sequence_num'] - 1;
 
          // sets min to 0 if sequence_num is less than the desire number of event to see
          if($bluejClose['sequence_num'] < $numOfEvent)
             $min = 0;
          else  
+            // //Otherwise, the end of last few events to see is the end event sequence minus the desire number of events
             $min = $bluejClose['sequence_num'] - $numOfEvent;
 
-         // $query = "SELECT event_type From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND event_type !='' AND sequence_num between " . $min . " AND " . $max;
+         // //Query for finding all events name that is between the sequence range
          $query = "SELECT name From master_events WHERE session_id= '".$bluejClose['session_id']. "'" . " AND sequence_num between " . $min . " AND " . $max;
-         // echo $query . "<br>";
-         // $results = getResultArray($conn, $query, "event_type");
-         $results = getResultArray($conn, $query, "name");
          
-         if(array_key_exists($results[0], $typeCount)){ 
-            $typeCount[$results[0]]++;
+         $results = getResultArray($conn, $query, "name");
+
+         // //Increment in tyepCount for each event name that is returned from within the sequence range
+         foreach($results as $value){
+            $typeCount[$value]++;
          }
       }
-      // array_push($arrData['categories'], array('category' => $category));
-      // array_push($arrData['dataset'], array('seriesname'=>'Total Invocations', 'data' => $dataInvo));
-      // array_push($arrData['dataset'], array('seriesname'=>'Main.main({})', 'data' => $dataMain));
-      // $data = array();
-      // foreach($typeCount as $type=>$value){
-      //    array_push($data, array('value' => $value));
-      //    array_push($arrData['dataset'], array('seriesname'=>$type, 'data' => $data));
-      // }
 
       $arrData["data"] = array();
       arsort($typeCount);
@@ -105,7 +112,10 @@
          );
       }
 
-      echo createChartObj($arrData, $chartType);
+      echo createChartObj($arrData, $chartType, $stat);
+   } else {
+      $stat .= "No session event";
+      echo createChartObj($arrData, $chartType, $stat);
    }
 
    disconnectServer($conn);

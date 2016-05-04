@@ -28,14 +28,12 @@
    // //Obtain all user_id(s)
    // $query = "select id from users order by id asc";
    // $useridList = getResultArray($conn, $query, "id");
+   $useridFile = $root . "checkpoints/" . $useridFile;
 
-   if(file_exists($uniqueUserFile) && 0 != filesize($uniqueUserFile)){
-      $useridList = restoreFromFile($uniqueUserFile);
+   if(file_exists($useridFile) && 0 != filesize($useridFile)){
+      $useridList = restoreFromFile($useridFile);
    } else {
-      // $query = "SELECT distinct s.user_id, s.participant_id FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s";
-      $remoteConn = connectToBlackBox();
-      $useridList = getUniqueUsers($remoteConn);
-      disconnectServer($remoteConn);
+      printlog("Please download remote data at least once");
    }
 
    // $startDate = '2016-01-01';
