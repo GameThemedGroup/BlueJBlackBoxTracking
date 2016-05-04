@@ -43,6 +43,7 @@
             array_push($useridList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id'], 'participant_identifier' => $row['participant_identifier']));
          }
       } 
+      
       mysqli_free_result($results);
       saveToFile($useridFile, $useridList);
    

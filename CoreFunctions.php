@@ -153,13 +153,13 @@
    function updateLocal($updateFileName){
       global $dbToUpdate;
       global $endLine;
-      global $root;
+      // global $root;
 
       // echo $updateFileName . $endLine;
       if(file_exists($updateFileName)){
          $conn = connectToLocal($dbToUpdate);
          //Removes "_out.csv" to get table name
-         $prefix = $root."csv/";
+         $prefix = "csv/";
          $tableName = substr($updateFileName, strlen($prefix), -8);
          // echo "Table is " . $tableName . $endLine;
 
@@ -263,11 +263,11 @@
 
    function getTableContents($conn, $ids, $table, $field){
       global $endLine;
-      global $root;
+      // global $root;
 
       if(count($ids) > 0){
          // $fileName = "output/". $table . "_out.csv";
-         $fileName = $root . "csv/" . $table . "_out.csv";
+         $fileName = "csv/" . $table . "_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -346,9 +346,9 @@
    }
 
    function getCompileOutputs($conn, $results){
-      global $root;
+      // global $root;
 
-      $fileCreated = $root ."csv/compile_outputs_out.csv";
+      $fileCreated = "csv/compile_outputs_out.csv";
       if($results->num_rows > 0){
          $fp = fopen($fileCreated, 'w');
          foreach($results as $sourceId){
@@ -372,10 +372,10 @@
    }
 
    function getDebuggerStackEntries($conn, $results){
-      global $root;
+      // global $root;
 
       if(count($results) > 0){
-         $fp = fopen($root. "csv/stack_entries_out.csv", 'w');
+         $fp = fopen("csv/stack_entries_out.csv", 'w');
          printLog("Created CSV file with filename of stack_entries_out.csv");
 
          foreach($results as $event){
@@ -392,10 +392,10 @@
    }
 
    function getInvocationStackEntries($conn, $results){
-      global $root;
+      // global $root;
 
       if(count($results) > 0){
-         $fp = fopen($root. "csv/stack_entries_out.csv", 'w');
+         $fp = fopen("csv/stack_entries_out.csv", 'w');
          printLog("Created CSV file with filename of stack_entries_out.csv");
 
          foreach($results as $event){
@@ -460,10 +460,10 @@
       $field = "user_id";
       // $fileCreated = getTableContents($conn, $userIds, $table, $field, $field);
       global $endLine;
-      global $root;
+      // global $root;
 
       if(count($userIds) > 0){
-         $fileName = $root . "csv/" . $table . "_out.csv";
+         $fileName = "csv/" . $table . "_out.csv";
          echo "Created CSV file with filename of " . $fileName . $endLine;
          $fp = fopen($fileName, 'w');
 
@@ -496,7 +496,7 @@
    }
 
    function getProjects($conn, $results){
-      global $root;
+      // global $root;
       $fileCreated = getTableContents($conn, $results, "projects", "user_id");
 
       $table = 'projects';
@@ -504,7 +504,7 @@
 
       if(count($userIds) > 0){
          // $fileName = "output/". $table . "_out.csv";
-         $fileName = $root . "csv/" .$table . "_out.csv";
+         $fileName = "csv/" .$table . "_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -562,14 +562,14 @@
    function getUsers($conn, $userIds){
       // $fileCreated = getTableContents($conn, $userIds, "users", "user_id");
       global $endLine;
-      global $root;
+      // global $root;
 
       $table = 'users';
       $field = 'id';
 
       if(count($userIds) > 0){
          // $fileName = "output/". $table . "_out.csv";
-         $fileName = $root . "csv/" . $table . "_out.csv";
+         $fileName = "csv/" . $table . "_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -671,22 +671,22 @@
    }
 
    function saveToFile($fileName, $status) {
-      global $root;
-      file_put_contents($root . "checkpoints/" . $fileName, serialize($status));
+      // global $root;
+      file_put_contents("checkpoints/" . $fileName, serialize($status));
    }
 
    function writeCheckpoint(&$checkPoint, $key){
       $checkPoint[$key] = 1;
       $checkPoint["started"] = 1;
-      saveToFile("checkpoint", $checkPoint);
+      saveToFile("checkpoints/checkpoint", $checkPoint);
       // file_put_contents($fileName, serialize($status));
    }
 
    function restoreFromFile($fileName){
-      global $root;
+      // global $root;
 
       $data = array();
-      $fileName = $root . "checkpoints/" . $fileName;
+      $fileName = "checkpoints/" . $fileName;
 
       if(file_exists($fileName)){
          $data = file_get_contents($fileName);
