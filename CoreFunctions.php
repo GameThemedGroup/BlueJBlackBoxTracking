@@ -1,11 +1,12 @@
 <?php
    date_default_timezone_set("America/Los_Angeles");
    $endLine = "\n";
-   $logLevel = 0;
+   $logLevel = 1;
    $dbToUpdate = 'capstoneLocal';
    //TODO replace $db with $dbToUpdate
    $db = 'capstoneLocal';
    $root = '../';
+   $directory = 'csv/';
 
    // //Read status from downloadStatus file
    $useridFile = "useridFile";
@@ -154,14 +155,16 @@
       global $dbToUpdate;
       global $endLine;
       global $root;
+      global $directory;
 
+      $prefix = $root . $directory;
+      $updateFileName = $prefix . $updateFileName;
       // echo $updateFileName . $endLine;
       if(file_exists($updateFileName)){
          $conn = connectToLocal($dbToUpdate);
          //Removes "_out.csv" to get table name
-         $prefix = $root . "csv/";
          $tableName = substr($updateFileName, strlen($prefix), -8);
-         // echo "Table is " . $tableName . $endLine;
+         echo "Table is " . $tableName . $endLine;
 
          $updateLocal = "LOAD DATA LOCAL infile '" .$updateFileName. "'
                            into table " .$tableName. " 
@@ -199,6 +202,7 @@
          die("Invalid query, please make sure query is correct with all the right parameters: " .$query. $endLine);
          exit();
       } 
+      printLog("Got results", 2);
       
       return $results;
    }
@@ -211,6 +215,7 @@
             array_push($resultArray, $row[$field]);
          }
          mysqli_free_result($results);
+         printLog("Free result memory", 2);
       } 
       return $resultArray;
    }
@@ -348,7 +353,7 @@
    function getCompileOutputs($conn, $results){
       global $root;
 
-      $fileCreated = $root ."csv/compile_outputs_out.csv";
+      $fileCreated = $root ."compile_outputs_out.csv";
       if($results->num_rows > 0){
          $fp = fopen($fileCreated, 'w');
          foreach($results as $sourceId){
@@ -375,8 +380,9 @@
       global $root;
 
       if(count($results) > 0){
-         $fp = fopen($root . "csv/stack_entries_out.csv", 'w');
-         printLog("Created CSV file with filename of stack_entries_out.csv");
+         $fileName = $root . "csv/stack_entries_out.csv";
+         printLog("Created CSV file with filename of " . $fileName);
+         $fp = fopen($fileName, 'w');
 
          foreach($results as $event){
             $query = "SELECT * From stack_entries WHERE sub_event_type= 'DebuggerEvent' and sub_event_id= '".$event."'";
@@ -395,8 +401,9 @@
       global $root;
 
       if(count($results) > 0){
-         $fp = fopen($root . "csv/stack_entries_out.csv", 'w');
-         printLog("Created CSV file with filename of stack_entries_out.csv");
+         $fileName = $root . "csv/stack_entries_out.csv";
+         printLog("Created CSV file with filename of " . $fileName);
+         $fp = fopen($fileName, 'w');
 
          foreach($results as $event){
             $query = "SELECT * From stack_entries WHERE sub_event_type= 'Invocation' and sub_event_id= '".$event."'";
@@ -455,21 +462,23 @@
       return $fileCreated;
    }
 
-   function getMasterEvents($conn, $userIds){
+   function getMasterEvents($conn, $userIds, $startDate, $endDate){
       $table = "master_events";
       $field = "user_id";
       // $fileCreated = getTableContents($conn, $userIds, $table, $field, $field);
       global $endLine;
       global $root;
+      global $directory;
 
       if(count($userIds) > 0){
-         $fileName = $root . "csv/" . $table . "_out.csv";
+         // $fileName = $root . $directory . $table . "_out.csv";
+         $fileName = $table . "_out.csv";
          echo "Created CSV file with filename of " . $fileName . $endLine;
-         $fp = fopen($fileName, 'w');
+         $fp = fopen($root . $directory . $fileName, 'w');
 
          foreach($userIds as $id){
             // echo $result[$result_id] . $endLine;
-            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id[$field]."' and participant_id = '".$id['participant_id'] . "'";
+            $query = "SELECT * From " . $table . " WHERE " . $field . "= '".$id[$field]."' and participant_id = '".$id['participant_id'] . "' and created_at between '" .$startDate. "' and '" .$endDate. "'";
             // echo $query . $endLine;
             $results = getResult($conn, $query);
 
@@ -483,6 +492,9 @@
          }
          fclose($fp);
          echo $table . " table download completed" . $endLine;
+         // //free up php memory
+         mysqli_free_result($results);
+
          return $fileName;
       } else {
          echo "Empty ids ..." . $endLine;
@@ -498,7 +510,8 @@
    function getProjects($conn, $results){
       global $root;
 
-      $fileCreated = getTableContents($conn, $results, "projects", "user_id");
+      // $fileCreated = getTableContents($conn, $results, "projects", "user_id");
+      // return $fileCreated;
 
       $table = 'projects';
       $field = 'user_id';
@@ -524,6 +537,10 @@
 
          fclose($fp);
          printLog($table . " table download completed");
+
+         // //Free up php memory
+         mysqli_free_result($results);
+
          return $fileName;
       } else {
          printLog($table . " table was not downloaded");
@@ -667,8 +684,13 @@
    function printLog($str, $level=1){
       global $logLevel, $endLine;
 
-      if ($level <= $logLevel)
-         echo $str . ": " . date("Y-m-d h:i:a") . $endLine;
+      if ($level <= $logLevel){
+         $logStr = $str . ": " . date("Y-m-d h:i:a");
+         if ($level > 1)
+            $logStr .= " " . round(memory_get_usage()/1048576,2) . "MB";
+
+         echo $logStr . $endLine;
+      }
    }
 
    function saveToFile($fileName, $status) {
@@ -679,7 +701,7 @@
    function writeCheckpoint(&$checkPoint, $key){
       $checkPoint[$key] = 1;
       $checkPoint["started"] = 1;
-      saveToFile("checkpoints/checkpoint", $checkPoint);
+      saveToFile("checkpoint", $checkPoint);
       // file_put_contents($fileName, serialize($status));
    }
 

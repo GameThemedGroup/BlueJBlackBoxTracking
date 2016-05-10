@@ -4,7 +4,7 @@
    //chmod 775 [directory name]
    //Change contents in folder to 
    //chmod 664 [directory name]/*
-   ini_set('memory_limit', '512M');
+   // ini_set('memory_limit', '512M');
 
    include 'CoreFunctions.php';
    $root = './';
@@ -30,7 +30,7 @@
    $conn = connectToBlackBox();
 
    $key = "init";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //Get user_id using experiment_identifier (e.g.'uwbgtcs')
       //The following query returns all UNIQUE user_id and participant_id using the experiment_identifier = uwbgtcs
       $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s where created_at between '" .$startDate. "' and '" .$endDate. "'";
@@ -55,29 +55,35 @@
    }
 
    $key = "master_events";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //master_events table
       // //Use the above useridList to retrieve all related participants master events from the Whitebox server
       // //Populating the master_events table has to be the first table to downloaded because
       // //all other table will be related from it.
       
       printLog("Start populating local master_events with user_id");
-      $fileCreated = getMasterEvents($conn, $useridList);
+      $fileCreated = getMasterEvents($conn, $useridList, $startDate, $endDate);
       updateLocal($fileCreated);
 
       // //Use updated local master_events to retrieve all project_id related to experiment if master_events table has been downloaded
       printLog("Start retrieving all project_id related to experiment");
       $connLocal = connectToLocal("capstoneLocal");
    
-      $query = "SELECT distinct project_id From master_events";
+      $query = "SELECT distinct project_id from master_events";
       $projectidList = getResultArray($connLocal, $query, "project_id");
+      printlog("Acquired Project ID List, saving to file...");
       saveToFile($projectidFile, $projectidList);
+      printlog("Saving to file ".$projectidFile." complete...");
+      unset($projectidList);
 
       // //This query returns all sessions USING user_id(s) found with experiment identifier
       $query = "SELECT distinct session_id from master_events";
-      $sessionidList = getResultArray($conn, $query, "id");
+      $sessionidList = getResultArray($connLocal, $query, "session_id");
+      printlog("Acquired Session ID List, saving to file...");
       saveToFile($sessionidFile, $sessionidList);
-      
+      printlog("Saving to file ".$sessionidFile." complete...");
+      unset($sessionidList);
+
       disconnectServer($connLocal);
 
       writeCheckpoint($checkPoint, $key);
@@ -87,7 +93,7 @@
    }
 
    $key = "inspectors";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //Inspector 
       printLog("Downloading inspectors to local");
       $sessionidList = restoreFromFile($sessionidFile);
@@ -99,7 +105,7 @@
    }
 
    $key = "invocations";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //Use sessionidList to populate local invocations table
       printLog("Start populating local invocations with session_id");
       $sessionidList = restoreFromFile($sessionidFile);
@@ -111,7 +117,7 @@
    }
 
    $key = "sessions";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //Use sessionidList to populate local sessions
       printLog("Start populating local sessions with session_id");
       $sessionidList = restoreFromFile($sessionidFile);
@@ -123,7 +129,7 @@
    }
 
    $key = "users";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //users table
       // //The table can be populated simply by query for every user_id from useridList retrieved earlier
       printLog("Start populating local users");
@@ -136,7 +142,7 @@
    }
 
    $key = "projects";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //Use useridList to populate local projects table
       printLog("Start populating local projects");
       $useridList = restoreFromFile($useridFile);
@@ -148,7 +154,7 @@
    } 
 
    $key = "packages";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //Use local projectidList from projects table to populate local packages table
       printLog("Start populating local packages");
       $projectidList = restoreFromFile($projectidFile);
@@ -160,7 +166,7 @@
    }
 
    $key = "source_files";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //Populate source_files table using projectiList from local master_events table
       printLog("Start populating local source_files");
       $projectidList = restoreFromFile($projectidFile);
@@ -172,7 +178,7 @@
    }
 
    $key = "sourceIds";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //Get all SourceFileID from local source_files table if source_file table has been retrieved
       printLog("Get all SourceFileID from local source_files");
       $connLocal = connectToLocal("capstoneLocal");
@@ -189,7 +195,7 @@
    }
 
    $key = "breakpoints";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //breakpoints table
       // //Populate local breakpoints using sourceFileIdList
       printLog("Start populating local breakpoints");
@@ -202,7 +208,7 @@
    }
 
    $key = "compile_inputs";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //compile_inputs table
       // //Populate local compile_inputs table with sourceFileIdList
       printLog("Start populating local compile_inputs");
@@ -215,7 +221,7 @@
    }
 
    $key = "fixtures";
-   if(!$checkPoint[$key]){  
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //fixtures table
       //Populate local fixtures table with sourceFileIdList
       printLog("Downloading fixtures to local");
@@ -227,19 +233,8 @@
       writeCheckpoint($checkPoint, $key);
    }
 
-   //////////////////////////////////////////////////////////////////////
-   // //source_histories table
-   // //Populate local source_histories table with sourceFileIdList 
-   // //TODO: needs rework on handling special characters
-   // $conn = connectToBlackBox();
-   // getSourceHistories($conn, $sourceFileIdList);
-   // disconnectServer($conn);
-   // //update source_histories table of local server
-   // updateLocal("'source_histories_out.csv'", "source_histories");
-   //////////////////////////////////////////////////////////////////////
-
    $key = "compile_events_and_outputs";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       // //compile_outputs table
       // //Populate local compile_outputs table with compile_event_id and source_file_id from local compile_inputs
       printLog("Getting compile_event_id(s)");
@@ -263,7 +258,7 @@
    }
 
    $key = "source_hashes";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //source_hashes table
       //Populate local source_hashes table with package_id from local server
       printLog("Getting package_id(s)");
@@ -282,7 +277,7 @@
    }
 
    $key = "stack_entries";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //stack_entries table
       //Get all event_id from local master_events where event_type is Invocation or DebuggerEvent
       //The retrieved event_id will be used to populate stack_entries table
@@ -321,7 +316,7 @@
    }
 
    $key = "bench_objects";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //bench_objects table
       //Populate bench_objects using package_id
       printLog("Getting all package_id(s) where event_type is BenchObject");
@@ -343,7 +338,7 @@
    }
 
    $key = "bench_objects_fixture";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //Bench object fixture
       printLog("Getting all id(s) from bench_objects");
       $connLocal = connectToLocal("capstoneLocal");
@@ -364,7 +359,7 @@
    }
 
    $key = "codepad_events";
-   if(!$checkPoint[$key]){
+   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //Codepad Events
       //select all event_id with type CodepadEvent
       printLog("Getting event_id(s) from master_events");
@@ -384,6 +379,15 @@
       
       writeCheckpoint($checkPoint, $key);
    }
+
+   // //source_histories table
+   // //Populate local source_histories table with sourceFileIdList 
+   // //TODO: needs rework on handling special characters
+   // $conn = connectToBlackBox();
+   // getSourceHistories($conn, $sourceFileIdList);
+   // disconnectServer($conn);
+   // //update source_histories table of local server
+   // updateLocal("'source_histories_out.csv'", "source_histories");
 
    // $key = "extensions";
    // if(!$checkPoint[$key]){
