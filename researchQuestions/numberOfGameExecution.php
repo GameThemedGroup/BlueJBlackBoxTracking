@@ -52,6 +52,7 @@
             "yAxisName"=> "Number of invocations",
             "paletteColors" => "#0075c2",
             "showxaxisvalues" => "0",
+            "rotateValues" => "1"
       );
 
       // //Apply changes to chart properties that are different than the defaults

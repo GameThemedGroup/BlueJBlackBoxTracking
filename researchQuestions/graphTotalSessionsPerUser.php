@@ -44,6 +44,7 @@
          "showXValue" => "0",
          "showlegend" => "1",
          "showLabels" => "0",
+         "rotateValues" => "1"
       );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);

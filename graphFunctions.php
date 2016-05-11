@@ -36,8 +36,7 @@
          "valuePadding" => "10",
          "valueFontBold" => "1",
          "valueFontSize" => "12",
-         "valueFontColor" => "#ff0000",
-         "rotateValues" => "1"
+         "valueFontColor" => "#ff0000"
       );
 
       return $chartProperties;

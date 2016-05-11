@@ -95,7 +95,8 @@
             "bgColor" => "#ffffff",
             "showXAxisLine"=> "1",
             "showlegend" => "1",
-            "showLabels" => "0"
+            "showLabels" => "0",
+            "rotateValues" => "1"
          );
 
          modifyMultiProperties($arrData["chart"], $propertiesToChange);

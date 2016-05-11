@@ -41,7 +41,10 @@
 
       if($results != null){
          while($row = $results->fetch_assoc()){
-            array_push($useridList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id'], 'participant_identifier' => $row['participant_identifier']));
+            $pIdentifier = strtolower($row['participant_identifier']);
+            $pIdentifier = str_replace(' ', '', $pIdentifier);
+            $pIdentifier = str_replace('skl', '', $pIdentifier);
+            array_push($useridList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id'], 'participant_identifier' => $pIdentifier));
          }
       } 
 

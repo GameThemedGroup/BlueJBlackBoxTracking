@@ -710,8 +710,10 @@
 
       $data = array();
       $fileName = $root . "checkpoints/" . $fileName;
+      printlog("Restoring from " . $fileName, 2);
 
       if(file_exists($fileName)){
+         printlog("Found file " . $fileName . ", restoring...", 2);
          $data = file_get_contents($fileName);
          if(empty($data))
             $data = array();
