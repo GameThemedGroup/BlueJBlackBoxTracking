@@ -30,6 +30,7 @@
    $startDate = $dateRange[0];
    $endDate = $dateRange[1];
 
+   // //Set chart caption depending on whether there are userid and participantid or not
    if(isset($_GET['userid']) && isset($_GET['participantid'])){
       $userid = $_GET['userid'];
       $participantid = $_GET['participantid'];
@@ -43,9 +44,7 @@
       $caption = "Last few events before closing BlueJ";
    }
 
-   // echo $caption;
-
-   // //Query for return all possible name of event between the time frame
+   // //Query for return all possible name of event between the time frame with or without participantid
    if($userid == null || $participantid == null){
       $query = "SELECT distinct name from master_events where name != 'bluej_start' and created_at BETWEEN '" . $startDate . "' and '" . $endDate . "'";
    } else {
@@ -62,12 +61,14 @@
       $typeCount[$type] = 0;
    }
 
-   // //A bluej_start to a bluej_finish is a session
+   // //An event bluej_start to a bluej_finish is a session
    // //We can find the end sequence num for a particular session
    // //First we want to find all the bluej_finish events
    if($userid == null || $participantid == null){
+      // //everyones bluej_finish events within time frame
       $query = "SELECT session_id, sequence_num from master_events where name = 'bluej_finish' and created_at BETWEEN '".$startDate."' AND '".$endDate."' order by id desc";
    } else {
+      // //one user's bluej_finish events within time frame
       $query = "SELECT session_id, sequence_num from master_events where name = 'bluej_finish' and user_id = ".$userid." and participant_id = ".$participantid." and created_at BETWEEN '".$startDate."' AND '".$endDate."' order by id desc";
    }
    $bluejCloseEvents = getResult($conn, $query);
@@ -86,6 +87,7 @@
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
+      // //Now we find the range for the number of events to look for after finding the bluej_finish event
       foreach($bluejCloseEvents as $bluejClose){      
          //last event is the ONE event before the LAST session bluej_finish
          $max = $bluejClose['sequence_num'] - 1;
@@ -109,6 +111,7 @@
       }
 
       $arrData["data"] = array();
+      // //sort the array that keeps count of each type of event in descending order
       arsort($typeCount);
       foreach($typeCount as $type=>$value){
          array_push($arrData["data"], 

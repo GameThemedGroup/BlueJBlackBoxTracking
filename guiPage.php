@@ -60,15 +60,13 @@
       <form method="get" style="display:block">
          <input type="radio" name="question" value="numberOfGameExecution.php" checked>Number of Game Execution<br>
          <input type="radio" name="question" value="graphTotalSessionsPerUser.php">Total Sessions Per User<br>
-         <!-- <input type="radio" name="question" value="invocationsPerUser.php">Total Invocations Per User(discarded)<br> -->
-         <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
-         <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br>
          <input type="radio" name="question" value="topTenComileErrors.php">Top Ten Compile Errors<br>
          <input type="radio" name="question" value="occurrenceOfSessions.php">Occurance of Sessions<br>
-         <input type="radio" name="question" value="participationRate.php">Participation Rate(TODO)<br>
          <input type="radio" name="question" value="lastFewEvents.php">Last few events before BlueJ closes<br>
          <input type="radio" name="question" value="durationOfSpaceSmasherAPI.php">Duration on SpaceSmasherAPI<br><br>
-
+<!--          <input type="radio" name="question" value="participationRate.php">Participation Rate(TODO)<br>
+         <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
+         <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br> -->
          <INPUT TYPE = "number" placeholder="User ID" NAME="userid" min="0">
          <INPUT TYPE = "number" placeholder="Participant ID" NAME="participantid" min="0">
          <INPUT TYPE = "Text" placeholder ="Start Date" NAME = "startDate">
