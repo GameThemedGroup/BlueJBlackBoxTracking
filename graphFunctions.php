@@ -53,7 +53,7 @@
    }
 
    function getStat($dataArray){
-      $stat = "Average: ".findAvg($dataArray)."<br>Max: ".findMax($dataArray)."<br>Min: ".findMin($dataArray);
+      $stat = "Total: " .count($dataArray). "<br>Average: ".findAvg($dataArray)."<br>Max: ".findMax($dataArray)."<br>Min: ".findMin($dataArray);
       return $stat;
    }
 

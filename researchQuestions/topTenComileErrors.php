@@ -24,7 +24,7 @@
    //compile_error from invocations when compiling the generated code (e.g. be- cause the user entered invalid parameters)
    //$query = "select count(compile_error), compile_error from invocations where result = 'compile_error' group by compile_error order by count(compile_error) desc limit 10";
    
-   //error messages from compile_outputs table
+   //error messages from compile_outputs table, only return top 10 errors from the highest one
    $query = "select distinct message, count(message) as count from compile_outputs group by message order by count(message) desc limit 10";
    $result = getResult($conn, $query);
 
