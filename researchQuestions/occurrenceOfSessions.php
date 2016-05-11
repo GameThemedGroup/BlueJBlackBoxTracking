@@ -26,18 +26,21 @@
    $chartType = 'column2D';
 
    $conn = connectToLocal($db);
-   // $query = "select id from users order by id asc";
-   // $useridList = getResult($conn, $query);
+
    $dateRange = getStartEndDate();
    $startDate = new DateTime($dateRange[0], new DateTimeZone('America/Los_Angeles'));
    $endDate = new DateTime($dateRange[1], new DateTimeZone('America/Los_Angeles'));
    $nextDay = new DateTime($dateRange[0], new DateTimeZone('America/Los_Angeles'));
    $nextDay->modify('+1 day');
 
+   // //adjust chart caption according to userid and participantid
    if(isset($_GET['userid']) && isset($_GET['participantid'])){
       $userid = $_GET['userid'];
       $participantid = $_GET['participantid'];
-      $caption = "Occurrence of Sessions for User ID: " . $userid . " and Participant ID: " . $participantid;
+      if(!empty($userid) && !empty($participantid))
+         $caption = "Occurrence of Sessions Per Day for User ID: " . $userid . " and Participant ID: " . $participantid;
+      else 
+         $caption = "Occurrence of Sessions Per Day";   
    } else {
       $caption = "Occurrence of Sessions";
    }
@@ -63,16 +66,13 @@
    // $category = array();
    $allArray = array();
 
+   // //continue until endDate
    while ($startDate->format('Y-m-d') != $endDate->format('Y-m-d')){
-/*
-      array_push($category, array('label'=>$startDate->format('Y-m-d')));
-      $query = "select user_id, count(user_id) as totalSessions from sessions where created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "' group by user_id";
-      $occurance = getResult($conn, $query);
-*/
-      if($userid == null || $participantid == null){
-      // echo "From " . $startDate->format('Y-m-d') . "To " . $nextDay->format('Y-m-d') ."<br>";
+      // //if either userid or participantid is missing just query for everyones' session
+      if((empty($userid) || $userid == null) && (empty($participantid)) || $participantid == null){
          $query = "select count(id) as totalSessions from sessions where created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "'";
       } else {
+         // //else query for one user's session
          $query = "select count(id) as totalSessions from sessions where user_id = " . $userid . " and participant_id = " .$participantid. " and created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "'";
       }
       // echo $query . "<br>";

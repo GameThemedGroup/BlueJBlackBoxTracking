@@ -18,8 +18,10 @@
    $startDate = $dateRange[0];
    $endDate = $dateRange[1];
 
+   $useridFile = $root . "checkpoints/" . $useridFile;
+
    // //Load user id list, exit if there are no list
-   if(file_exists("../checkpoints/".$useridFile) && 0 != filesize("../checkpoints/".$useridFile)){
+   if(file_exists($useridFile) && 0 != filesize($useridFile)){
       $useridList = restoreFromFile($useridFile);
       $userId = 0;
       $allArray = array();

@@ -64,7 +64,7 @@
          <input type="radio" name="question" value="occurrenceOfSessions.php">Occurance of Sessions<br>
          <input type="radio" name="question" value="lastFewEvents.php">Last few events before BlueJ closes<br>
          <input type="radio" name="question" value="durationOfSpaceSmasherAPI.php">Duration on SpaceSmasherAPI<br><br>
-<!--          <input type="radio" name="question" value="participationRate.php">Participation Rate(TODO)<br>
+    <!-- <input type="radio" name="question" value="participationRate.php">Participation Rate(TODO)<br>
          <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
          <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br> -->
          <INPUT TYPE = "number" placeholder="User ID" NAME="userid" min="0">
