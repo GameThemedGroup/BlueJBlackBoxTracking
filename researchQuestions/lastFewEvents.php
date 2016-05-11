@@ -33,10 +33,17 @@
    if(isset($_GET['userid']) && isset($_GET['participantid'])){
       $userid = $_GET['userid'];
       $participantid = $_GET['participantid'];
-      $caption = "Last few events before closing BlueJ for User ID: " . $userid . " and Participant ID: " . $participantid;
+
+      if(!empty($userid) && !empty($participantid))
+         $caption = "Last few events before closing BlueJ for User ID: " . $userid . " and Participant ID: " . $participantid;
+      else{
+         $caption = "Last few events before closing BlueJ";   
+      }
    } else {
       $caption = "Last few events before closing BlueJ";
    }
+
+   // echo $caption;
 
    // //Query for return all possible name of event between the time frame
    if($userid == null || $participantid == null){
@@ -74,7 +81,7 @@
             "caption" => $caption,
             "xAxisName"=> "Event types",
             "yAxisName"=> "Number of events",
-            "paletteColors" => "#0075c2, #ff0000",
+            "paletteColors" => "#0075c2",
       );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);

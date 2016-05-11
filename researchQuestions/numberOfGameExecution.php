@@ -50,7 +50,7 @@
 
    // //Specify chart properties
    $propertiesToChange = array(
-         "caption" => "Number of Game Invocations",
+         "caption" => "Number of Game method calls per user",
          "xAxisName"=> "User ID",
          "yAxisName"=> "Number of invocations",
          "paletteColors" => "#0075c2",
@@ -121,7 +121,8 @@
          $labelStr .= $data;
          array_push($arrData["data"], 
             array(
-               "label" => $labelStr,
+               // "label" => $labelStr,
+               "label" => "",
                "value" => $value
             )
          );

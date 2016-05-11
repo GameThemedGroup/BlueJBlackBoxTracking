@@ -35,13 +35,15 @@
       $arrData = array("chart" => initChartProperties());
       $chartType = "column2D";
       $propertiesToChange = array(
-         "caption" => "Total Sessions Per User ID",
+         "caption" => "Total number of sessions Per User",
          "xAxisName"=> "User IDs",
          "yAxisName"=> "Number of Sessions",
          "paletteColors" => "#0075c2",
          "bgColor" => "#ffffff",
          "showXAxisLine"=> "1",
+         "showXValue" => "0",
          "showlegend" => "1",
+         "showLabels" => "0",
       );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
@@ -58,6 +60,7 @@
          array_push($arrData["data"], 
             array(
                "label" => "User ID: ".$key,
+               // "label" => "",
                "value" => $value
             )
          );

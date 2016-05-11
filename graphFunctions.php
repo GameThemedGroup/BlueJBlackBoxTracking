@@ -31,7 +31,13 @@
          "plotHighlightEffect"=> "fadeout",
          "xAxisLineColor" => "#999999",
          "divlineColor" => "#999999",
-         "divLineIsDashed" => "1"
+         "divLineIsDashed" => "1",
+         "baseFontSize" => "20",
+         "valuePadding" => "10",
+         "valueFontBold" => "1",
+         "valueFontSize" => "12",
+         "valueFontColor" => "#ff0000",
+         "rotateValues" => "1"
       );
 
       return $chartProperties;
