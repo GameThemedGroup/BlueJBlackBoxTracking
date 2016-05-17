@@ -38,12 +38,13 @@
             "labelDisplay" => "rotate",
             "paletteColors" => "#0075c2",
             "showxaxisvalues" => "0",
+            "slantLabels"=> "1"
          );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
 
-
       $arrData["data"] = array();
+      $dataArray = array();
       while($row = $result->fetch_array()) {
          array_push($arrData["data"], 
             array(
@@ -51,9 +52,10 @@
                "value" => $row["count"]
             )
          );
+         array_push($dataArray, $row["count"]);
       }
 
-      echo createChartObj($arrData, $chartType);
+      echo createChartObj($arrData, $chartType, getStat($dataArray));
    }
    
    disconnectServer($conn);

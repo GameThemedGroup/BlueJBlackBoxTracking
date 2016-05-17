@@ -14,6 +14,17 @@
       $var += $id;
       echo $var;
    }
+
+   $query = "SELECT event_id 
+               From master_events 
+               WHERE event_type='Invocation' 
+                  and created_at BETWEEN '".$startDate. "' and '" .$endDate. "' 
+                  and user_id=".$userId." and participant_id=". $participantId;
+
+   $query = "SELECT code 
+               From invocations 
+               where code like '%main%' and id=" . $event;
+
    // $query = "select id from users";
    // $results = getResultArray($conn, $query, 'id');
 

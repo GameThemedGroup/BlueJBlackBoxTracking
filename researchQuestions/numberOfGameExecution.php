@@ -52,7 +52,8 @@
             "yAxisName"=> "Number of invocations",
             "paletteColors" => "#0075c2",
             "showxaxisvalues" => "0",
-            "rotateValues" => "1"
+            "rotateValues" => "1",
+            "showLabels" => "0",
       );
 
       // //Apply changes to chart properties that are different than the defaults
@@ -103,7 +104,7 @@
                   mysqli_free_result($results);
                }
 
-               $dataInvo[$userId] = $numberOfMainInvoked;
+               $dataInvo[$userId."/".$participantId] = $numberOfMainInvoked;
             }
          }
 
@@ -119,8 +120,8 @@
             $labelStr .= $data;
             array_push($arrData["data"], 
                array(
-                  // "label" => $labelStr,
-                  "label" => "",
+                  "label" => $labelStr,
+                  // "label" => "",
                   "value" => $value
                )
             );

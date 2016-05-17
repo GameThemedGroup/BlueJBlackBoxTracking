@@ -57,8 +57,22 @@
       return $avg;
    }
 
+   function findSum($dataArray){
+      return array_sum($dataArray);
+   }
+
+   // Function to calculate square of value - mean
+   function sd_square($x, $mean) { return pow($x - $mean,2); }
+
+      // Function to calculate standard deviation (uses sd_square)    
+   function sd($array) {
+       
+      // square root of sum of squares devided by N-1
+      return sqrt(array_sum(array_map("sd_square", $array, array_fill(0,count($array), (array_sum($array) / count($array)) ) ) ) / (count($array)-1) );
+   }
+
    function getStat($dataArray){
-      $stat = "Total: " .count($dataArray). "<br>Average: ".findAvg($dataArray)."<br>Max: ".findMax($dataArray)."<br>Min: ".findMin($dataArray);
+      $stat = "Number of entries: " .count($dataArray). "<br>Total: " .findSum($dataArray). "<br>Max: " .findMax($dataArray). "<br>Average: " .findAvg($dataArray). "<br>Min: ". findMin($dataArray) . "<br>Standard Deviation: " . sd($dataArray);
       return $stat;
    }
 

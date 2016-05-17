@@ -14,7 +14,6 @@
    // //There is as high as 105 sessions within a month time. 
    // //Could mean student gets distracted very often due to lack of concentration or lack of focus. Therefore having to open and close the BlueJ
 
-
    // //Answer's correctness: 
    // //Some user’s recorded session so minimal as if they never closed the BlueJ or just did their work in another computer that has not opted in for data-collection. 
 

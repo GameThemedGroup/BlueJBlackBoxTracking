@@ -27,16 +27,17 @@
       arsort($allArray);
 
       $arrData = array("chart" => initChartProperties());
-      $chartType = "column2D";
+      $chartType = "pie2d";
       $propertiesToChange = array(
          "caption" => "Participation rate by instructors",
          "xAxisName"=> "Classes",
          "yAxisName"=> "Number of students",
-         "paletteColors" => "#0075c2",
+         "paletteColors" => "#0075c2,#ff8000,#ffff00,#00ff00, #0040ff, #bf00ff",
          "bgColor" => "#ffffff",
          "showXAxisLine"=> "1",
          "showlegend" => "1",
          "showLabels" => "1",
+         "valueFontSize" => "30"
       );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
