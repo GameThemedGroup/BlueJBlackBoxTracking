@@ -83,6 +83,7 @@
             "xAxisName"=> "Event types",
             "yAxisName"=> "Number of events",
             "paletteColors" => "#0075c2",
+            "slantLabels"=> "1"
       );
 
       modifyMultiProperties($arrData["chart"], $propertiesToChange);
