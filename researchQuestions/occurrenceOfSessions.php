@@ -70,10 +70,10 @@
    while ($startDate->format('Y-m-d') != $endDate->format('Y-m-d')){
       // //if either userid or participantid is missing just query for everyones' session
       if((empty($userid) || $userid == null) && (empty($participantid)) || $participantid == null){
-         $query = "select count(id) as totalSessions from sessions where created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "'";
+         $query = "SELECT count(id) as totalSessions from sessions where created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "'";
       } else {
          // //else query for one user's session
-         $query = "select count(id) as totalSessions from sessions where user_id = " . $userid . " and participant_id = " .$participantid. " and created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "'";
+         $query = "SELECT count(id) as totalSessions from sessions where user_id = " . $userid . " and participant_id = " .$participantid. " and created_at BETWEEN'" . $startDate->format('Y-m-d') . "' AND '" .$nextDay->format('Y-m-d'). "'";
       }
       // echo $query . "<br>";
       $occurance = getResult($conn, $query);

@@ -31,13 +31,13 @@
          $participantId = $value['participant_id'];
          $userId = $value['user_id'];
 
-         $query = "select distinct project_id from master_events where user_id=" . $userId ." and participant_id =" . $participantId . " order by project_id asc";
+         $query = "SELECT distinct project_id from master_events where user_id=" . $userId ." and participant_id =" . $participantId . " order by project_id asc";
          $projectList = getResultArray($conn, $query, "project_id");
          $totalDuration = 0;
             
          // //Retrieve all project that have the package which contains SpaceSmasher
          foreach($projectList as $project){
-            $query = "select id from packages where project_id =".$project." and name LIKE '%SpaceSmasher%' order by project_id asc";
+            $query = "SELECT id from packages where project_id =".$project." and name LIKE '%SpaceSmasher%' order by project_id asc";
             $projectNpackageIDS = getResultArray($conn, $query, "id");
 
             if(count($projectNpackageIDS) != 0){
