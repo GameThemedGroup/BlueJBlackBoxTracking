@@ -306,6 +306,7 @@
    //////Table Downloads//////
 
       // //Download master_events table
+   // //Download master_events table, everything starts from the master_events table
    function getMasterEvents($conn, $userIds, $startDate, $endDate){
       $table = "master_events";
       $field = "user_id";
@@ -343,7 +344,7 @@
          printlog("Empty ids ...");
       }
    }
-   
+
    // //Download bench_objects table
    function getBenchObjects($conn, $results){
       $fileCreated = getTableContents($conn, $results, "bench_objects", "package_id");
@@ -630,153 +631,6 @@
          return $fileName;
       } else {
          printLog($table . " table was not downloaded");
-      }
-   }
-
-   //not using
-   function printResultInTable($results){
-      echo "<table border=1 class = 'sortable'>";
-      $fields = getFieldNames($results);
-      printArray($fields, true);
-      printQueryResults($results);
-      echo "</table><br>";  
-   }
-
-   //not using
-   function printQueryResults($results){
-      if($results->num_rows > 0){
-         while($row = $results->fetch_assoc()){
-            echo "<tr>";
-            foreach($row as $field){
-               if($field == null)
-                  echo "<td>" . "null " . "</td>";
-               else 
-                  echo "<td>" . $field . "</td>";
-            }
-            echo "</tr>";
-         }
-      } 
-   }
-
-   //not using
-   function printArray($results, $isFieldname){
-      if($results != null){
-         foreach ($results as $p){
-            if($isFieldname)
-               echo "<td>" . $p . "</td>";
-            else 
-               echo "<tr><td>" . $p . "</td></tr>";
-         }
-      } 
-   }
-
-   //not using
-   // //Check if table in the database is empty
-   function isTableEmpty($conn, $tableName){
-      $query = "Select count(id) as count from " . $tableName;
-      $result = getResult($conn, $query);
-      
-      while($numOfRows = $result->fetch_assoc()){
-         $row = $numOfRows['count'];
-      }
-
-      if($row > 0){
-         return FALSE;
-      } else {
-         return TRUE;
-      }
-   }
-
-   //Not using 
-   function getNonUniqueUsers($conn){
-      $query = "SELECT distinct user_id, participant_id from master_events";
-      
-      $results = getResult($conn, $query);
-      $nonUniqueUserList = array();
-      if($results != null){
-         while($row = $results->fetch_assoc()){
-            array_push($nonUniqueUserList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id']));
-         }
-      } 
-      
-      mysqli_free_result($results);
-      return $nonUniqueUserList;
-   }
-
-   //Not using
-   function getUniqueUsers($conn){
-      $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s order by s.participant_id";
-      
-      $results = getResult($conn, $query);
-      $uniqueUserList = array();
-      if($results != null){
-         while($row = $results->fetch_assoc()){
-            array_push($uniqueUserList, array('user_id' => $row['user_id'], 'participant_id' => $row['participant_id']));
-         }
-      } 
-
-      mysqli_free_result($results);
-      return $uniqueUserList;
-   }
-
-   // //not using
-   function deleteEventFromDate($conn, $date){
-      //removes every row before the specified date from master_events table
-      $query = "delete from master_events where created_at < '" . $date . "'";
-      $conn->query($query);
-   }
-   
-   //not using
-   function objToArray($results, $colName){
-      $resultArray = array();
-      if($results != null){
-         while($row = $results->fetch_assoc()){
-            array_push($resultArray, $row[$colName]);
-         }
-      } 
-      return $resultArray;
-   }
-
-   //not using
-   function getPid($connection){
-      $sql = "SELECT p.participant_identifier FROM (SELECT @experiment:='uwbmcss595') UNUSED, participant_identifiers_for_experiment p";
-      
-      $results = $connection->query($sql);
-      $participantList = array();
-
-      if($results->num_rows > 0){
-         //output data of each row
-         $i = 0;
-         
-         while($row = $results->fetch_assoc()){
-            $participantList[$i] = $row["participant_identifier"];
-
-            $i++;
-         }
-      } else {
-         echo "No result\n<br>";
-      }
-      return $participantList;
-   }
-
-   //not using
-   function saveToCsv($filename, $results){
-      if($filename != null && $results != null){
-         $fp = fopen($filename, 'w');
-
-         // Write field name
-         $fieldNames = getFieldNames($results);
-         // Open filestream
-         fputcsv($fp, $fieldNames);
-
-         foreach ($results as $val) {
-            fputcsv($fp, $val); 
-         }
-
-         fclose($fp);
-         printLog("Output generated!\n<br>");
-      } else {
-         printLog("Missing a filename or empty data passed in...\n<br>");
       }
    }
 ?>
