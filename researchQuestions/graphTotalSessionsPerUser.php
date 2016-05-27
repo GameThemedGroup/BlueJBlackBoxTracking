@@ -34,8 +34,8 @@
       $arrData = array("chart" => initChartProperties());
       $chartType = "column2D";
       $propertiesToChange = array(
-         "caption" => "Total number of sessions Per User",
-         "xAxisName"=> "User IDs",
+         "caption" => "Total number of sessions Per Machine Per Instructor",
+         "xAxisName"=> "Per Machine Per Instructor",
          "yAxisName"=> "Number of Sessions",
          "paletteColors" => "#0075c2",
          "bgColor" => "#ffffff",

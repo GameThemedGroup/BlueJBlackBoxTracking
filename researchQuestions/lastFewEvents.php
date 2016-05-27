@@ -36,7 +36,7 @@
       $participantid = $_GET['participantid'];
 
       if(!empty($userid) && !empty($participantid))
-         $caption = "Last few events before closing BlueJ for User ID: " . $userid . " and Participant ID: " . $participantid;
+         $caption = "Last few events before closing BlueJ for Machine ID: " . $userid . " and Participant ID: " . $participantid;
       else{
          $caption = "Last few events before closing BlueJ";   
       }

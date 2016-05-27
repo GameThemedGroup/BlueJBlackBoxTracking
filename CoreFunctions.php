@@ -158,8 +158,10 @@
       global $directory;
 
       $prefix = $root . $directory;
-      $updateFileName = $prefix . $updateFileName;
-      // echo $updateFileName . $endLine;
+      // $prefix = $root;
+      // $updateFileName = $prefix . $updateFileName;
+      printlog("Update file name is: " . $updateFileName . $endLine, 2);
+
       if(file_exists($updateFileName)){
          $conn = connectToLocal($dbToUpdate);
          //Removes "_out.csv" to get table name
@@ -269,10 +271,11 @@
    function getTableContents($conn, $ids, $table, $field){
       global $endLine;
       global $root;
+      global $directory;
 
       if(count($ids) > 0){
          // $fileName = "output/". $table . "_out.csv";
-         $fileName = $root . "csv/" . $table . "_out.csv";
+         $fileName = $root . $directory . $table . "_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -286,7 +289,6 @@
                   fputcsv($fp, $val);       
                }
             }
-            // mysqli_free_result($results);
          }
 
          fclose($fp);
@@ -341,7 +343,22 @@
    }
 
    function getCompileEvents($conn, $results){
-      $fileCreated = getTableContents($conn, $results, "compile_events", "id");
+      global $root;
+      global $directory;
+
+      $fileCreated = $root . $directory . "compile_events_out.csv";
+      if($results->num_rows > 0){
+         $fp = fopen($fileCreated, 'w');
+         foreach($results as $sourceId){
+            $query = "SELECT * From compile_events WHERE id='".$sourceId['compile_event_id']."'";
+            $results = getResult($conn, $query);
+
+            foreach ($results as $val) {
+               fputcsv($fp, $val);       
+            }
+         }
+         fclose($fp);
+      }
       return $fileCreated;
    }
 
@@ -352,14 +369,13 @@
 
    function getCompileOutputs($conn, $results){
       global $root;
+      global $directory;
 
-      $fileCreated = $root ."compile_outputs_out.csv";
+      $fileCreated = $root . $directory . "compile_outputs_out.csv";
       if($results->num_rows > 0){
          $fp = fopen($fileCreated, 'w');
          foreach($results as $sourceId){
-            // echo $user['user_id'] . $endLine;
             $query = "SELECT * From compile_outputs WHERE source_file_id= '".$sourceId['source_file_id']."' and compile_event_id='".$sourceId['compile_event_id']."'";
-            // echo $query . $endLine;
             $results = getResult($conn, $query);
 
             foreach ($results as $val) {
@@ -378,9 +394,10 @@
 
    function getDebuggerStackEntries($conn, $results){
       global $root;
+      global $directory;
 
       if(count($results) > 0){
-         $fileName = $root . "csv/stack_entries_out.csv";
+         $fileName = $root . $directory . "stack_entries_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -394,14 +411,16 @@
          }
          fclose($fp);
          printLog("stack_entries table with DebuggerEvent download completed");
+         return $fileName;
       }
    }
 
    function getInvocationStackEntries($conn, $results){
       global $root;
+      global $directory;
 
       if(count($results) > 0){
-         $fileName = $root . "csv/stack_entries_out.csv";
+         $fileName = $root . $directory . "stack_entries_out.csv";
          printLog("Created CSV file with filename of " . $fileName);
          $fp = fopen($fileName, 'w');
 
@@ -415,6 +434,7 @@
          }
          fclose($fp);
          printLog("stack_entries table with InvocationEvent download completed");
+         return $fileName;
       }
    }
 

@@ -47,8 +47,8 @@
 
       // //Specify chart properties
       $propertiesToChange = array(
-            "caption" => "Number of Game method calls per user",
-            "xAxisName"=> "User ID",
+            "caption" => "Number of Game Method Calls Per Machine Per Instructor",
+            "xAxisName"=> "Per Machine Per Instuctor",
             "yAxisName"=> "Number of invocations",
             "paletteColors" => "#0075c2",
             "showxaxisvalues" => "0",

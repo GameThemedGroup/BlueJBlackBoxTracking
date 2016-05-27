@@ -1,13 +1,7 @@
 <?php
-   //Note to self when recreating output and checkpoint folders
-   //
-   //chmod 775 [directory name]
-   //Change contents in folder to 
-   //chmod 664 [directory name]/*
-   // ini_set('memory_limit', '512M');
-
    include 'CoreFunctions.php';
    $root = './';
+   $limitResult = ' limit 10';
    date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 
@@ -15,10 +9,6 @@
 
    if(array_key_exists("started", $checkPoint) && $checkPoint["started"] == 1){
       printLog("Resuming from Checkpoint");
-      // $useridList = restoreFromFile($useridFile);
-      // $sessionidList = restoreFromFile($sessionidFile);
-      // $projectidList = restoreFromFile($projectidFile);
-      // $sourceFileIdList = restoreFromFile($sourceFileidFile);
    }
 
    // //Get start and end date for the data to download
@@ -33,7 +23,7 @@
    if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //Get user_id using experiment_identifier (e.g.'uwbgtcs')
       //The following query returns all UNIQUE user_id and participant_id using the experiment_identifier = uwbgtcs
-      $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s where created_at between '" .$startDate. "' and '" .$endDate. "'";
+      $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s where created_at between '" .$startDate. "' and '" .$endDate. "' limit 10";
       
       //Store returned mysqli results object into $useridList
       $results = getResult($conn, $query);
@@ -54,7 +44,6 @@
       writeCheckpoint($checkPoint, $key);
    } else {
       $useridList = restoreFromFile($useridFile);
-      // $sessionidList = restoreFromFile($sessionidFile);
    }
 
    $key = "master_events";
@@ -72,7 +61,7 @@
       printLog("Start retrieving all project_id related to experiment");
       $connLocal = connectToLocal("capstoneLocal");
    
-      $query = "SELECT distinct project_id from master_events";
+      $query = "SELECT distinct project_id from master_events" . $limitResult;
       $projectidList = getResultArray($connLocal, $query, "project_id");
       printlog("Acquired Project ID List, saving to file...");
       saveToFile($projectidFile, $projectidList);
@@ -80,7 +69,7 @@
       unset($projectidList);
 
       // //This query returns all sessions USING user_id(s) found with experiment identifier
-      $query = "SELECT distinct session_id from master_events";
+      $query = "SELECT distinct session_id from master_events" . $limitResult;
       $sessionidList = getResultArray($connLocal, $query, "session_id");
       printlog("Acquired Session ID List, saving to file...");
       saveToFile($sessionidFile, $sessionidList);
@@ -186,7 +175,7 @@
       printLog("Get all SourceFileID from local source_files");
       $connLocal = connectToLocal("capstoneLocal");
       
-      $query = "SELECT id from source_files";
+      $query = "SELECT id from source_files" . $limitResult;
       $sourceFileIdList = getResultArray($connLocal, $query, "id");
       
       saveToFile($sourceFileidFile, $sourceFileIdList);
@@ -242,7 +231,7 @@
       // //Populate local compile_outputs table with compile_event_id and source_file_id from local compile_inputs
       printLog("Getting compile_event_id(s)");
       $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT compile_event_id, source_file_id from compile_inputs";
+      $query = "SELECT compile_event_id, source_file_id from compile_inputs" . $limitResult;
       $compileEventIdList = getResult($connLocal, $query);
       disconnectServer($connLocal);
 
@@ -266,7 +255,7 @@
       //Populate local source_hashes table with package_id from local server
       printLog("Getting package_id(s)");
       $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct package_id from master_events";
+      $query = "SELECT distinct package_id from master_events" . $limitResult;
       $packageList = getResultArray($connLocal, $query, "package_id");
       disconnectServer($connLocal);
 
@@ -281,35 +270,36 @@
 
    $key = "stack_entries";
    if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
-      //stack_entries table
+      //stack_entries table and debugger_events table
       //Get all event_id from local master_events where event_type is Invocation or DebuggerEvent
       //The retrieved event_id will be used to populate stack_entries table
       $connLocal = connectToLocal("capstoneLocal");
       
       printLog("Getting all event_id(s) where event_type is Invoation");
       //select all event_id with type invocation
-      $query = "SELECT event_id from master_events where event_type = 'Invocation'";
+      $query = "SELECT event_id from master_events where event_type = 'Invocation'" . $limitResult;
       $invocationEventList = getResultArray($connLocal, $query, "event_id");
 
       printLog("Getting all event_id(s) where event_type is DebuggerEvent");
       //select all event_id with type debuggerEvent
-      $query = "SELECT distinct event_id from master_events where event_type = 'DebuggerEvent'";
+      $query = "SELECT distinct event_id from master_events where event_type = 'DebuggerEvent'" . $limitResult;
       $debuggerEventList = getResultArray($connLocal, $query, "event_id");
+      
       disconnectServer($connLocal);
 
-      printLog("Downloading stack_entries with invocation as event to local");
-      // retrieve all stack_entries of type Invocation and the event_id
-      getInvocationStackEntries($conn, $invocationEventList);
-      updateLocal("stack_entries_out.csv");
+      //Debugger Events Table
+      printLog("Downloading degbugger_events to local");
+      $fileCreated = getDebuggerEvents($conn, $debuggerEventList);
+      updateLocal($fileCreated);
 
       printLog("Downloading stack_entries with debugger as event to local");
       //retrieve all stack_entries of type DebuggerEvent and the event_id
-      getDebuggerStackEntries($conn, $debuggerEventList);
-      updateLocal("stack_entries_out.csv");
+      $fileCreated = getDebuggerStackEntries($conn, $debuggerEventList);
+      updateLocal($fileCreated);
 
-      //Debugger Events
-      printLog("Downloading degbugger_events to local");
-      $fileCreated = getDebuggerEvents($conn, $debuggerEventList);
+      printLog("Downloading stack_entries with invocation as event to local");
+      // retrieve all stack_entries of type Invocation and the event_id
+      $fileCreated = getInvocationStackEntries($conn, $invocationEventList);
       updateLocal($fileCreated);
 
       unset($invocationEventList);
@@ -324,7 +314,7 @@
       //Populate bench_objects using package_id
       printLog("Getting all package_id(s) where event_type is BenchObject");
       $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct package_id from master_events where event_type = 'BenchObject'";
+      $query = "SELECT distinct package_id from master_events where event_type = 'BenchObject'" . $limitResult;
       $benchPackageList = getResultArray($connLocal, $query, "package_id");
 
       disconnectServer($connLocal);
@@ -345,7 +335,7 @@
       //Bench object fixture
       printLog("Getting all id(s) from bench_objects");
       $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct id from bench_objects";
+      $query = "SELECT distinct id from bench_objects" . $limitResult;
       $benchObjectList = getResultArray($connLocal, $query, "id");
 
       disconnectServer($connLocal);
@@ -367,7 +357,7 @@
       //select all event_id with type CodepadEvent
       printLog("Getting event_id(s) from master_events");
       $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct event_id from master_events where event_type = 'CodepadEvent'";
+      $query = "SELECT distinct event_id from master_events where event_type = 'CodepadEvent'" . $limitResult;
       $codePadEventList = getResultArray($connLocal, $query, "event_id");
 
       disconnectServer($connLocal);
@@ -392,33 +382,11 @@
    // //update source_histories table of local server
    // updateLocal("'source_histories_out.csv'", "source_histories");
 
-   // $key = "extensions";
-   // if(!$checkPoint[$key]){
-   //    //Extensions
-   //    //select all master_event_id from local master_events
-   //    //At this point this is the table that takes the longest time to download
-   //    //Have encountered exceeding PHP preset memory while retrieving data
-   //    //Therefore, we could leave this download out since it only contains extensions used in a project
-   //    //Which in our case there will be no extensions
-      
-   //    printLog("Getting id(s) from master_events");
-   //    $connLocal = connectToLocal("capstoneLocal");
-   //    $query = "SELECT distinct id from master_events";
-   //    $masterEventIdList = getResultArray($connLocal, $query, "id");
+   // //Extension table, not sure how to trigger it
+   // //Therefore, no need to download
 
-   //    disconnectServer($connLocal);
-
-   //    printLog("Downloading extensions to local");
-   //    // $conn = connectToBlackBox();
-   //    $fileCreated = getExtensions($conn, $masterEventIdList);
-   //    // disconnectServer($conn);
-   //    updateLocal($fileCreated);
-
-   //    unset($masterEventIdList);
-      
-   //    writeCheckpoint($checkPoint, $key);
-   // }
-
+   // //Tests not triggered by our students
+   // //Therefore, no need to download
    // $key = "tests";
    // if(!$checkPoint[$key]){
    //    //Test
@@ -440,6 +408,8 @@
    //    writeCheckpoint($checkPoint, $key);
    // }
 
+   // //Test Results not triggered by our students
+   // //Therefore, no need to download
    // $key = "test_results";
    // if(!$checkPoint[$key]){
    //    //Test Results
@@ -496,7 +466,8 @@
    // echo "Download and updating.....Done: " . date("Y-m-d h:i:a") . "<br>\n";
    // //////////////////////////////////////////////////////////////////////
 
-   // disconnectServer($conn);
+   // //Disconnect from Blackbox
+   disconnectServer($conn);
    
-   printLog("Download and updating EVERYTHING.....Done");
+   printLog("Download and updating.....Done");
 ?>

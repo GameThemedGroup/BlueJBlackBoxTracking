@@ -89,7 +89,7 @@
          $chartType = "column2D";
          $propertiesToChange = array(
             "caption" => "Duration spent in SpaceSmasherAPI",
-            "xAxisName"=> "User IDs",
+            "xAxisName"=> "Per Machine Per Instructor",
             "yAxisName"=> "Time in minutes",
             "paletteColors" => "#0075c2",
             "bgColor" => "#ffffff",
@@ -109,7 +109,7 @@
 
             array_push($arrData["data"], 
                array(
-                  "label" => "UserID: " . $key,
+                  "label" => "Per Machine Per Instructor: " . $key,
                   "value" => floor($allArray[$key])
                )
             );

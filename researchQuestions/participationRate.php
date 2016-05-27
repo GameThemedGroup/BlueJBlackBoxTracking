@@ -29,7 +29,7 @@
       $arrData = array("chart" => initChartProperties());
       $chartType = "pie2d";
       $propertiesToChange = array(
-         "caption" => "Participation rate by instructors",
+         "caption" => "Participation rate Per instructors",
          "xAxisName"=> "Classes",
          "yAxisName"=> "Number of students",
          "paletteColors" => "#0075c2,#ff8000,#ffff00,#00ff00, #0040ff, #bf00ff",

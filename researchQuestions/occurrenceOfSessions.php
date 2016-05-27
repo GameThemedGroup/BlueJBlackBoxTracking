@@ -38,7 +38,7 @@
       $userid = $_GET['userid'];
       $participantid = $_GET['participantid'];
       if(!empty($userid) && !empty($participantid))
-         $caption = "Occurrence of Sessions Per Day for User ID: " . $userid . " and Participant ID: " . $participantid;
+         $caption = "Occurrence of Sessions Per Day for Machine ID: " . $userid . " and Participant ID: " . $participantid;
       else 
          $caption = "Occurrence of Sessions Per Day";   
    } else {
