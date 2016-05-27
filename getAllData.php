@@ -1,7 +1,9 @@
 <?php
    include 'CoreFunctions.php';
+   // //defines the root directory
    $root = './';
-   $limitResult = ' limit 10';
+   // //Use to test smaller download by limiting number of result for queries
+   $limitResult = '';
    date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 
@@ -9,6 +11,7 @@
 
    if(array_key_exists("started", $checkPoint) && $checkPoint["started"] == 1){
       printLog("Resuming from Checkpoint");
+      
    }
 
    // //Get start and end date for the data to download
@@ -23,7 +26,7 @@
    if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
       //Get user_id using experiment_identifier (e.g.'uwbgtcs')
       //The following query returns all UNIQUE user_id and participant_id using the experiment_identifier = uwbgtcs
-      $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s where created_at between '" .$startDate. "' and '" .$endDate. "' limit 10";
+      $query = "SELECT distinct s.user_id, s.participant_id, s.participant_identifier FROM (SELECT @experiment:='uwbgtcs') unused, sessions_for_experiment s where created_at between '" .$startDate. "' and '" .$endDate. "'" . $limitResult;
       
       //Store returned mysqli results object into $useridList
       $results = getResult($conn, $query);
@@ -74,11 +77,13 @@
       printlog("Acquired Session ID List, saving to file...");
       saveToFile($sessionidFile, $sessionidList);
       printlog("Saving to file ".$sessionidFile." complete...");
+
       unset($sessionidList);
 
       disconnectServer($connLocal);
 
       writeCheckpoint($checkPoint, $key);
+      
    } else {
       $projectidList = restoreFromFile($projectidFile);
       $sessionidList = restoreFromFile($sessionidFile);
@@ -94,6 +99,7 @@
       unset($sessionidList);
    
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "invocations";
@@ -106,6 +112,7 @@
       unset($sessionidList);
    
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "sessions";
@@ -118,6 +125,7 @@
       unset($sessionidList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "users";
@@ -131,6 +139,7 @@
       unset($useridList);
 
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "projects";
@@ -143,6 +152,7 @@
       unset($useridList);
 
       writeCheckpoint($checkPoint, $key);
+      
    } 
 
    $key = "packages";
@@ -155,6 +165,7 @@
       unset($projectidList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "source_files";
@@ -167,6 +178,7 @@
       unset($projectidList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "sourceIds";
@@ -182,6 +194,7 @@
       disconnectServer($connLocal);
       
       writeCheckpoint($checkPoint, $key);
+      
    } else {
       $sourceFileIdList = restoreFromFile($sourceFileidFile);
    }
@@ -197,6 +210,7 @@
       unset($sourceFileIdList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "compile_inputs";
@@ -210,6 +224,7 @@
       unset($sourceFileIdList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "fixtures";
@@ -223,6 +238,7 @@
       unset($sourceFileIdList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "compile_events_and_outputs";
@@ -247,6 +263,7 @@
       mysqli_free_result($compileEventIdList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "source_hashes";
@@ -266,6 +283,7 @@
       unset($packageList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "stack_entries";
@@ -306,6 +324,7 @@
       unset($debuggerEventList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "bench_objects";
@@ -328,6 +347,7 @@
       unset($benchPackageList);
       
       writeCheckpoint($checkPoint, $key);
+      
    }
 
    $key = "bench_objects_fixture";
@@ -349,29 +369,31 @@
       unset($benchObjectList);
       
       writeCheckpoint($checkPoint, $key);
+
    }
 
-   $key = "codepad_events";
-   if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
-      //Codepad Events
-      //select all event_id with type CodepadEvent
-      printLog("Getting event_id(s) from master_events");
-      $connLocal = connectToLocal("capstoneLocal");
-      $query = "SELECT distinct event_id from master_events where event_type = 'CodepadEvent'" . $limitResult;
-      $codePadEventList = getResultArray($connLocal, $query, "event_id");
+   // Need more investigation into codepad_events
+   // $key = "codepad_events";
+   // if(!array_key_exists($key, $checkPoint) || !$checkPoint[$key]){
+   //    //Codepad Events
+   //    //select all event_id with type CodepadEvent
+   //    printLog("Getting event_id(s) from master_events");
+   //    $connLocal = connectToLocal("capstoneLocal");
+   //    $query = "SELECT distinct event_id from master_events where event_type = 'CodepadEvent'" . $limitResult;
+   //    $codePadEventList = getResultArray($connLocal, $query, "event_id");
 
-      disconnectServer($connLocal);
+   //    disconnectServer($connLocal);
 
-      printLog("Downloading codepad_events to local");
-      // $conn = connectToBlackBox();
-      $fileCreated = getCodePadEvents($conn, $codePadEventList);
-      // disconnectServer($conn);
-      updateLocal($fileCreated);
+   //    printLog("Downloading codepad_events to local");
+   //    // $conn = connectToBlackBox();
+   //    $fileCreated = getCodePadEvents($conn, $codePadEventList);
+   //    // disconnectServer($conn);
+   //    updateLocal($fileCreated);
 
-      unset($codePadEventList);
+   //    unset($codePadEventList);
       
-      writeCheckpoint($checkPoint, $key);
-   }
+   //    writeCheckpoint($checkPoint, $key);
+   // }
 
    // //source_histories table
    // //Populate local source_histories table with sourceFileIdList 
