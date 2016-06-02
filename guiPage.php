@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- <link rel="stylesheet" type="text/css" href="datepicker/jquery.datepick.css">  -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-<!-- <script type="text/javascript" src="datepicker/jquery.plugin.js"></script> 
-<script type="text/javascript" src="datepicker/jquery.datepick.js"></script> -->
 
+<!-- CSS style settings for the page -->
 <style type="text/css">
    html, body { height: 100%; padding: 0; margin: 0; }
    div {overflow: scroll;}
@@ -18,10 +16,14 @@
       border: 1px solid;
       word-wrap: break-word;
    }
+   /*settings for each <div> in the page */
+   /*the page is divided into a left and right section*/
+   /*right section displays the graph*/
+   /*left section contains Research Questions to display and adjustable parameters*/
+   /*left section also display statistics of the research questions when applicable*/
    #left {width:20%; height:100%;float:left;background:#C0C0C0;}
    #right {width:80%; height:100%;float:left}
    #topLeft { background:#888888; height:40%;}
-   /*#topRight { background:#C0C0C0; height:20%; }*/
    #bottomLeft {height:60%;}
    #bottomLeft table tr td:first-child, #bottomLeft table tr th:first-child {
       width: 80%;
@@ -42,18 +44,13 @@
 </style>
 </head>
 <body>
-
+<!-- library for generating graphs -->
 <script type="text/javascript" src="fusioncharts/js/fusioncharts.js"></script>
 <script type="text/javascript" src="fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
-
+<!-- loading image to tell user process is occuring, disappears when graphs are ready to be shown -->
 <img id="loading" src="loading.gif"/>
 
-<?php
-   // include 'CoreFunctions.php';
-   // include 'questionsToAnswer.php';
-   // include 'graphFunctions.php';
-   // include("fusioncharts/fusioncharts.php");
-?>
+<!-- Top Left sectin of the page contain Research Question in a checkbox fashion -->
 <div id="left">
    <div id="topLeft">
       Research Questions:<br><br>
@@ -65,8 +62,6 @@
          <input type="radio" name="question" value="lastFewEvents.php">Last few events before BlueJ closes<br>
          <input type="radio" name="question" value="durationOfSpaceSmasherAPI.php">Duration on SpaceSmasherAPI<br>
          <input type="radio" name="question" value="participationRate.php">Participation Rate<br><br>
-         <!-- <input type="radio" name="question" value=""># of Compiles Per Todo File(TODO)<br>
-         <input type="radio" name="question" value=""># of Compiles Per File(TODO)<br> -->
          <INPUT TYPE = "number" placeholder="User ID" NAME="userid" min="0">
          <INPUT TYPE = "number" placeholder="Participant ID" NAME="participantid" min="0">
          <INPUT TYPE = "Text" placeholder ="Start Date" NAME = "startDate">
@@ -80,12 +75,12 @@
 </div>
 
 <div id="right">
-   <!-- <div id="topRight"></div> -->
    <div id="bottomRight">
       
    </div>
 </div>
 
+<!-- Handler for displaying graph and other message generated from individual research questions -->
 <script type="text/javascript">
    
    $("#topLeft form").submit(function() {
