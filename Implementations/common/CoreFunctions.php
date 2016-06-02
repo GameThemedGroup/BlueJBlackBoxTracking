@@ -3,7 +3,7 @@
    $endLine = "\n";
    // //Higher level outputs finer debug messages
    $logLevel = 1;
-   $dbToUpdate = 'capstoneLocal';
+   $db = 'capstoneLocal';
 
    $root = '../';
    $directory = 'csv/';
@@ -116,7 +116,7 @@
 
    // //Populate tables in local database with csv file
    function updateLocal($updateFileName){
-      global $dbToUpdate;
+      global $db;
       global $endLine;
       global $root;
       global $directory;
@@ -127,7 +127,7 @@
       printlog("Update file name is: " . $updateFileName . $endLine, 2);
 
       if(file_exists($updateFileName)){
-         $conn = connectToLocal($dbToUpdate);
+         $conn = connectToLocal($db);
          // Removes "_out.csv" to get table name
          $tableName = substr($updateFileName, strlen($prefix), -8);
          echo "Table is " . $tableName . $endLine;

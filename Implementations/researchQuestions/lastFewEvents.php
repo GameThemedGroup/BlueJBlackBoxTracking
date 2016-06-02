@@ -1,6 +1,6 @@
 <?php
-   include "../CoreFunctions.php";
-   include "../graphFunctions.php";
+   include (dirname(__FILE__) . "/../common/CoreFunctions.php");
+   include (dirname(__FILE__) . "/../visualization/graphFunctions.php");
    // //Question:
    // //What do students do just before they close BlueJ?
    // //Are they editing code or compiling or running the game?

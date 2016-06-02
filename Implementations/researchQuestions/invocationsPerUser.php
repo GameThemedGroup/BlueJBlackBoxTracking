@@ -1,6 +1,6 @@
 <?php
-   include "../CoreFunctions.php";
-   include "../graphFunctions.php";
+   include (dirname(__FILE__) . "/../common/CoreFunctions.php");
+   include (dirname(__FILE__) . "/../visualization/graphFunctions.php");
 
    // //Question (Why): 
    // //Total time student spent on different files. Compute the number of times a file is compiled between the date 2016-01-01 to 2016-01-25 on a per user base

@@ -45,10 +45,10 @@
 </head>
 <body>
 <!-- library for generating graphs -->
-<script type="text/javascript" src="fusioncharts/js/fusioncharts.js"></script>
-<script type="text/javascript" src="fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
+<script type="text/javascript" src="Implementations/visualization/fusioncharts/js/fusioncharts.js"></script>
+<script type="text/javascript" src="Implementations/visualization/fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
 <!-- loading image to tell user process is occuring, disappears when graphs are ready to be shown -->
-<img id="loading" src="loading.gif"/>
+<img id="loading" src="Implementations/visualization/loading.gif"/>
 
 <!-- Top Left sectin of the page contain Research Question in a checkbox fashion -->
 <div id="left">
@@ -64,8 +64,8 @@
          <input type="radio" name="question" value="participationRate.php">Participation Rate<br><br>
          <INPUT TYPE = "number" placeholder="User ID" NAME="userid" min="0">
          <INPUT TYPE = "number" placeholder="Participant ID" NAME="participantid" min="0">
-         <INPUT TYPE = "Text" placeholder ="Start Date" NAME = "startDate">
-         <INPUT TYPE = "Text" placeholder ="End Date" NAME = "endDate">
+         <INPUT TYPE = "Text" placeholder ="Start Date" NAME = "startDate" value="2016-01-01">
+         <INPUT TYPE = "Text" placeholder ="End Date" NAME = "endDate" value="2016-01-25">
          <INPUT TYPE = submit name="Submit">
       </form>    
    </div>
@@ -82,19 +82,25 @@
 
 <!-- Handler for displaying graph and other message generated from individual research questions -->
 <script type="text/javascript">
-   
-   $("#topLeft form").submit(function() {
+   $("#topLeft form").submit(function(e) {
+         e.preventDefault();
          $("#bottomLeft").html("");
 
          var startDate = $("#startDate").val();
          var endDate = $("#endDate").val();
-         var url = "researchQuestions/" + $('input[name=question]:checked', '#topLeft form').val();
+         var url = "Implementations/researchQuestions/" + $('input[name=question]:checked', '#topLeft form').val();
 
          $("#loading").css("display", "block");
          $.ajax({
             url: url + "?" + $("#topLeft form").serialize(),
             success: function(result) {
-               var json = JSON.parse(result);
+               $("#loading").css("display", "none");
+               try {
+                  var json = JSON.parse(result);
+               } catch (e) {
+                  alert(result);
+                  return;
+               }
                if(json.error){
                   alert(json.error);
                } else {
@@ -111,7 +117,6 @@
                   });
                   chart.render();
                }
-               $("#loading").css("display", "none");
             }
          });
          return false;

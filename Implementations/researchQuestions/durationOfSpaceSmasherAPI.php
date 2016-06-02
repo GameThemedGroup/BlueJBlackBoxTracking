@@ -1,6 +1,6 @@
 <?php
-   include "../CoreFunctions.php";
-   include "../graphFunctions.php";
+   include (dirname(__FILE__) . "/../common/CoreFunctions.php");
+   include (dirname(__FILE__) . "/../visualization/graphFunctions.php");
    // //Question:
    // //Do any students go into the SpaceSmasherAPI and modify it? 
    // //If so, how long do they spend on it?.

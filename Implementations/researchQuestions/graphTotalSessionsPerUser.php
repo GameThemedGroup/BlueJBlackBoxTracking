@@ -1,6 +1,6 @@
 <?php
-   include "../CoreFunctions.php";
-   include "../graphFunctions.php";
+   include (dirname(__FILE__) . "/../common/CoreFunctions.php");
+   include (dirname(__FILE__) . "/../visualization/graphFunctions.php");
 
    // //Question (why):
    // //Total sessions per user, a session is an opening and closing of BlueJ. 

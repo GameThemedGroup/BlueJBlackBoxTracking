@@ -1,9 +1,9 @@
 <?php
-   include 'CoreFunctions.php';
+   include 'Implementations/common/CoreFunctions.php';
    // //defines the root directory
    $root = './';
    // //Use to test smaller download by limiting number of result for queries
-   $limitResult = '';
+   $limitResult = '5';
    date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 

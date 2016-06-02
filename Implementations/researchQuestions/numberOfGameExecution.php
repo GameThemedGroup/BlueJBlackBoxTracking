@@ -1,6 +1,6 @@
 <?php
-   include "../CoreFunctions.php";
-   include "../graphFunctions.php";
+   include (dirname(__FILE__) . "/../common/CoreFunctions.php");
+   include (dirname(__FILE__) . "/../visualization/graphFunctions.php");
    // include("../fusioncharts/fusioncharts.php");
 
    // //Question (why):
