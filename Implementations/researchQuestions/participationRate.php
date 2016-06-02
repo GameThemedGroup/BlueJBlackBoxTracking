@@ -2,7 +2,7 @@
    include (dirname(__FILE__) . "/../common/CoreFunctions.php");
    include (dirname(__FILE__) . "/../visualization/graphFunctions.php");
       
-   if(file_exists($root . "checkpoints/" . $useridFile)){
+   if(file_exists($root . "dataTransfer/checkpoints/" . $useridFile)){
       // //Load useridList
       $useridList = restoreFromFile($useridFile);
 

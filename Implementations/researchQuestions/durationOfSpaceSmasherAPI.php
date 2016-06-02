@@ -18,10 +18,8 @@
    $startDate = $dateRange[0];
    $endDate = $dateRange[1];
 
-   $useridFile = $root . "checkpoints/" . $useridFile;
-
    // //Load user id list, exit if there are no list
-   if(file_exists($useridFile) && 0 != filesize($useridFile)){
+   if(file_exists($root . "dataTransfer/checkpoints/" . $useridFile) && 0 != filesize($root . "dataTransfer/checkpoints/" . $useridFile)){
       $useridList = restoreFromFile($useridFile);
       $userId = 0;
       $allArray = array();
@@ -116,7 +114,11 @@
          }
 
          echo createChartObj($arrData, $chartType, getStat($allArray));
+      } else {
+         $jsonMsg = array("error" => "No per machine/per instructor accessed the API");
+         echo json_encode($jsonMsg, true);
       }
+
    } else {
       $jsonMsg = array("error" => "Please download remote data at least once");
       echo json_encode($jsonMsg, true);

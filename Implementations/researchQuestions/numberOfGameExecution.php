@@ -26,12 +26,9 @@
 
    $conn = connectToLocal($db);
    // //Obtain all user_id(s)
-   // $query = "select id from users order by id asc";
-   // $useridList = getResultArray($conn, $query, "id");
-   $useridFile = $root . "checkpoints/" . $useridFile;
 
    // //Load used id list 
-   if(file_exists($useridFile) && 0 != filesize($useridFile)){
+   if(file_exists($root . "dataTransfer/checkpoints/" . $useridFile) && 0 != filesize($root . "dataTransfer/checkpoints/" . $useridFile)){
       $useridList = restoreFromFile($useridFile);
 
       // //Get start and end date for the data to query

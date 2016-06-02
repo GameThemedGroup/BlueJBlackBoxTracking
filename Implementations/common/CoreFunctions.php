@@ -268,7 +268,7 @@
 
       $data = array();
       // //Restore will be from checkpoint folder
-      $fileName = $root . "checkpoints/" . $fileName;
+      $fileName = $root . "dataTransfer/checkpoints/" . $fileName;
       printlog("Restoring from " . $fileName, 2);
 
       if(file_exists($fileName)){
