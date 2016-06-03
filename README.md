@@ -16,7 +16,8 @@ Contains documents generated throughout this Capstone project: powerpoint, proje
    * Contains to formats of the Capstone defense presentation: one in Google Slides and one in Microsoft Powerpoint
 3. Report 
    * Contains final project report in PDF and a zip with LaTeX
-
+4. Local Database Backup
+   * A backup .sql file for "slice" of data download to analyze
 ### Implementations
 
 Contains source code / scripts for data transfer, data analysis, and data visualization.
