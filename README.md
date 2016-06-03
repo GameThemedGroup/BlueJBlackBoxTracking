@@ -18,6 +18,7 @@ Contains documents generated throughout this Capstone project: powerpoint, proje
    * Contains final project report in PDF and a zip with LaTeX
 4. Local Database Backup
    * A backup .sql file for "slice" of data download to analyze
+
 ### Implementations
 
 Contains source code / scripts for data transfer, data analysis, and data visualization.
