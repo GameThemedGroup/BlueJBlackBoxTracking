@@ -32,7 +32,7 @@ Contains source code / scripts for data transfer, data analysis, and data visual
 5. visualization
    * Libraries and scripts required for generating graph onto the guiPage.php
 
-##Instructions to setting up scripts###
+##Required setup to run scripts##
 
 ###Operating System:
 
