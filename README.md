@@ -24,7 +24,7 @@ Contains source code / scripts for data transfer, data analysis, and data visual
 1. common
    * Script containing common functions shared by researchQuestions scripts and visualization. Functions like connecting to database (remote and local), data handling, etc.
 2. dataTransfer 
-   * Script for download our "slice" of data from Blackbox. ATTENTION: must have folders checkpoints and csv emptied in order for the download to complete when you first run it.
+   * Script to download our "slice" of data from Blackbox. ATTENTION: must have folders "checkpoints", "csv", and both emptied in order for the download to complete when running it for the first time.
 3. researchQuestions
    * Scripts for each of the 7 research questions posted by our professor. Each of them polls data from local database with visualization
 4. tests
