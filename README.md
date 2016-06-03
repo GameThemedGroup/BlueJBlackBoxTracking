@@ -2,20 +2,35 @@
 
 ##Structure of Project
 There are two major folders in this project containing files which pertains to each folder.
-1. Documentations - Contains documents generated throughout this Capstone project: powerpoint, project report, and instructions on setting up a machine for BlueJ data collection.
-2. Implementations - Contains source code / scripts for data transfer, data analysis, and data visualization.
+
+1. Documentations
+2. Implementations
 
 ### Documentations
-1. BlueJ Data Collection Instruction - Detailed steps with images to setup BlueJ data collection in a docx file
-2. Powerpoint - Contains to formats of the Capstone defense presentation: one in Google Slides and one in Microsoft Powerpoint
-3. Report - Contains final project report in PDF and a zip with LaTeX
+
+Contains documents generated throughout this Capstone project: powerpoint, project report, and instructions on setting up a machine for BlueJ data collection.
+
+1. BlueJ Data Collection Instruction
+   * Detailed steps with images to setup BlueJ data collection in a docx file
+2. Powerpoint 
+   * Contains to formats of the Capstone defense presentation: one in Google Slides and one in Microsoft Powerpoint
+3. Report 
+   * Contains final project report in PDF and a zip with LaTeX
 
 ### Implementations
-1. common - Script containing common functions shared by researchQuestions scripts and visualization. Functions like connecting to database (remote and local), data handling, etc.
-2. dataTransfer - Script for download our "slice" of data from Blackbox. ATTENTION: must have folders checkpoints and csv emptied in order for the download to complete when you first run it.
-3. researchQuestions - Scripts for each of the 7 research questions posted by our professor. Each of them polls data from local database with visualization
-4. tests - Script that was used to UnitTest from functionalities
-5. visualization - Libraries and scripts required for generating graph onto the guiPage.php
+
+Contains source code / scripts for data transfer, data analysis, and data visualization.
+
+1. common
+   * Script containing common functions shared by researchQuestions scripts and visualization. Functions like connecting to database (remote and local), data handling, etc.
+2. dataTransfer 
+   * Script for download our "slice" of data from Blackbox. ATTENTION: must have folders checkpoints and csv emptied in order for the download to complete when you first run it.
+3. researchQuestions
+   * Scripts for each of the 7 research questions posted by our professor. Each of them polls data from local database with visualization
+4. tests
+   * Script that was used to UnitTest from functionalities
+5. visualization
+   * Libraries and scripts required for generating graph onto the guiPage.php
 
 ##Instructions to setting up scripts###
 
