@@ -168,7 +168,7 @@
          die("Invalid query, please make sure query is correct with all the right parameters: " . $query . $endLine);
          exit();
       } 
-      printLog("Got results", 2);
+      printLog("Got results", 3);
       
       return $results;
    }
@@ -268,7 +268,7 @@
 
       $data = array();
       // //Restore will be from checkpoint folder
-      $fileName = $root . "dataTransfer/checkpoints/" . $fileName;
+      $fileName = $root . "checkpoints/" . $fileName;
       printlog("Restoring from " . $fileName, 2);
 
       if(file_exists($fileName)){
@@ -279,7 +279,9 @@
          else
             // //Unserialize data when reading from file
             $data = unserialize($data);
-      }  
+      } else {
+         printLog($fileName . " Not Found...", 2);
+      }
       return $data;
    }
 

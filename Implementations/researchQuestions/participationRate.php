@@ -4,6 +4,7 @@
       
    if(file_exists($root . "dataTransfer/checkpoints/" . $useridFile)){
       // //Load useridList
+      $root = "../dataTransfer/";
       $useridList = restoreFromFile($useridFile);
 
       // //Make all identifiers lower case, remove all extra space, and remove 'skl'

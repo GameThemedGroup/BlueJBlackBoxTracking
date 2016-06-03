@@ -3,7 +3,7 @@
    // //defines the root directory
    $root = './Implementations/dataTransfer/';
    // //Use to test smaller download by limiting number of result for queries e.g. " limit 10"
-   $limitResult = ' limit 5';
+   $limitResult = '';
    date_default_timezone_set("America/Los_Angeles");
    printLog("Download and updating.....Start");
 

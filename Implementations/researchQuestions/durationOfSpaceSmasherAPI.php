@@ -20,6 +20,7 @@
 
    // //Load user id list, exit if there are no list
    if(file_exists($root . "dataTransfer/checkpoints/" . $useridFile) && 0 != filesize($root . "dataTransfer/checkpoints/" . $useridFile)){
+      $root = "../dataTransfer/";
       $useridList = restoreFromFile($useridFile);
       $userId = 0;
       $allArray = array();

@@ -68,7 +68,7 @@
 
    // Function to calculate standard deviation (uses sd_square)    
    function sd($array) {    
-      // square root of sum of squares devided by N-1
+      // square root of sum of squares divided by N-1
       return sqrt(array_sum(array_map("sd_square", $array, array_fill(0,count($array), (array_sum($array) / count($array)) ) ) ) / (count($array)-1) );
    }
 

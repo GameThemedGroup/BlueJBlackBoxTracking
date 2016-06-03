@@ -29,6 +29,7 @@
 
    // //Load used id list 
    if(file_exists($root . "dataTransfer/checkpoints/" . $useridFile) && 0 != filesize($root . "dataTransfer/checkpoints/" . $useridFile)){
+      $root = "../dataTransfer/";
       $useridList = restoreFromFile($useridFile);
 
       // //Get start and end date for the data to query
